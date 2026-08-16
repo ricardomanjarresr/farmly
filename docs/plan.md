@@ -29,14 +29,14 @@ The one piece of Walmy's spec that carries forward: show the Farmly price next t
 
 No `OrderLine`, no `tier`/`floor_price`, no `buyer_type` — those were all B2B/negotiation/premium fields, now dropped. `Comment` and `Follow` are not modeled yet since they're the first two things to cut if time is short — add only if the core loop is done early.
 
-### Branch split (adopting Ricardo's proposal)
+### Branch split — assigned
 
-- `shared-schema` — Prisma schema above; lands first since everyone builds on it.
-- `telegram-bot` — farmer posting flow + `/mislistings` + `/pedidos`.
-- `feed-web` — discovery feed grid, search, chips, like/save, price-comparison badge.
-- `buy-flow` — the Buy modal/page, quantity/name/phone/confirm, price-comparison line, writes to `Order`.
+Adapted from Ricardo's 4-way proposal into a 2-person split, both branching from the same merged base (`main` — app scaffold + Ricardo's docs, already merged and pushed):
 
-Price comparison doesn't need its own branch — it's a small addition that folds into `shared-schema` (the `ReferencePrice` table + seed data), `feed-web` (badge), and `buy-flow` (the comparison line).
+- **`feature/telegram-farmer-backend` — Walmy.** Prisma schema (`Farm`, `Listing`, `Order`, `ReferencePrice`), Telegram bot (`/sell`, `/mislistings`, `/pedidos`), Listing Extraction Agent (blocked on Anthropic key).
+- **`feature/web-buyer-experience` — Ricardo.** Discovery feed (grid, search, chips, like/save, price-comparison badge), Buy flow (qty/name/phone/confirm, price-comparison line, writes to `Order`).
+
+Both branches are pushed and ready to build on. Since the schema lives on Walmy's branch, Ricardo's branch will need it merged in (or the schema shape agreed on up front) before `feed-web`/`buy-flow` can read real data — worth syncing on the `Listing`/`Order`/`ReferencePrice` shape early rather than at merge time.
 
 ### Still blocked on
 
