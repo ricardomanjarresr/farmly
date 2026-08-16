@@ -1,6 +1,49 @@
 # Farmly / El Farmer — Planning Discussion
 
-## Context
+## ⭐ FINAL DIRECTION (2026-08-16, night) — supersedes everything below
+
+Conflict resolved: Ricardo logged a separate "team decision" (`docs/decisions.md`) explicitly cutting B2B, the Negotiation Agent, and the Aggregation Agent — the opposite of what Walmy had told me earlier tonight. Walmy's call: **adopt Ricardo's plan as the base, and add price comparison on top.** Everything about Version B, B2B, Premium tiers, Negotiation Agent, and Aggregation Agent in the sections below is now **out of scope** — kept in this file only as a record of how we got here, not as something to build.
+
+### The adopted flow (Ricardo's `docs/flow_draft.html` + `docs/decisions.md`)
+
+1. **Farmer posts on Telegram** — photo + voice/text: item, price, quantity, expiration. (AI extraction still deferred until an Anthropic key exists; typed-only for now.)
+2. **Listing appears on a web discovery feed** — grid layout, newest-first, no algorithm.
+3. **Buyer browses freely, no account** — search bar, category chips (All / Vegetables / Fruit / Eggs & dairy / Near me), like + save on every card.
+4. **Buyer taps Buy — entirely on the web** — quantity stepper, name, phone, confirm. No redirect to Telegram. Simulated confirmation, no real charge (matches what we'd already decided).
+5. **Farmer manages everything inside Telegram** — `/mislistings` (see own listings, reply `DELETE n` to remove), `/pedidos` (see incoming orders). No farmer web login/dashboard.
+6. **Full social feed features are in scope**: like, comment, follow farmer, search/filter. If time runs short, cut in this order: comments first, then follow — like, save, and search/filter are protected.
+7. **Buyer's price field**: no separate price filter at all in Ricardo's flow — dropped along with the B2B/negotiation scope, so the earlier "floor filter vs. max budget" question is now moot.
+
+### What Walmy is adding on top: price comparison
+
+The one piece of Walmy's spec that carries forward: show the Farmly price next to Whole Foods/Amazon/Walmart for the same product, using mocked/hand-entered reference data (not live-scraped) — this stays in scope, layered onto Ricardo's flow rather than replacing it.
+- **On the feed card**: a small badge when a `ReferencePrice` exists for that item (e.g. "23% less than store") — reinforces the discovery/"grass-planting" feel Rednote-style feeds rely on, right where the buyer is already browsing.
+- **In the Buy modal**: a one-line comparison ("Farmly $3.50/lb · Whole Foods $5.50/lb") alongside the confirm button, for the moment it matters most for conversion.
+
+### Updated data model (Prisma) — replaces the Version B model below
+
+- `Farm` — id, name, town, telegram_chat_id (to know who to notify)
+- `Listing` — id, farm_id, item, price, unit, qty_available, expiration_date, photo_url, category (vegetable/fruit/eggs & dairy/etc., for the chip filter), like_count, status (active/deleted), created_at (drives newest-first sort)
+- `Order` — id, listing_id, buyer_name, buyer_phone, qty, status (pending/confirmed — simulated), created_at
+- `ReferencePrice` — id, item, source (Whole Foods/Amazon/Walmart), price — small hand-entered table for the demo
+
+No `OrderLine`, no `tier`/`floor_price`, no `buyer_type` — those were all B2B/negotiation/premium fields, now dropped. `Comment` and `Follow` are not modeled yet since they're the first two things to cut if time is short — add only if the core loop is done early.
+
+### Branch split (adopting Ricardo's proposal)
+
+- `shared-schema` — Prisma schema above; lands first since everyone builds on it.
+- `telegram-bot` — farmer posting flow + `/mislistings` + `/pedidos`.
+- `feed-web` — discovery feed grid, search, chips, like/save, price-comparison badge.
+- `buy-flow` — the Buy modal/page, quantity/name/phone/confirm, price-comparison line, writes to `Order`.
+
+Price comparison doesn't need its own branch — it's a small addition that folds into `shared-schema` (the `ReferencePrice` table + seed data), `feed-web` (badge), and `buy-flow` (the comparison line).
+
+### Still blocked on
+
+- Telegram bot token (@BotFather) — needed for `telegram-bot` and to test `buy-flow`'s farmer-notification path end-to-end.
+- Anthropic API key — needed for photo→listing extraction; everything else (typed listing entry, feed, buy flow, price comparison) doesn't need it.
+
+## Context (older material below, superseded by the section above)
 
 There are **two different visions** for this project floating around, and they don't fully agree with each other. Before writing any code, we need to reconcile them and pick one scope for the day-build.
 
