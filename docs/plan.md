@@ -61,6 +61,20 @@ Name is confirmed: **Farmly**. Walmy laid out the full three-sided model: Farmer
 2. **Payment = simulated confirm for today's demo.** "Confirm" is a commitment step with no real charge — no Stripe account/webhook work needed today. Real Stripe test-mode Checkout stays a stretch add-on only if time allows.
 3. **Price-comparison feature = in scope, with mocked data.** Small static comparison table (Farmly price vs. Whole Foods/Amazon/Walmart) for a couple of demo products, shown at confirm time or on the listing — purely for the pitch narrative, not live-scraped.
 
+### B2C Discovery Feed — "Rednote for vegetables" (new, evening session)
+
+Walmy's new addition, scoped specifically to **B2C** (not B2B): a visual, browse-to-discover feed for individual buyers, modeled on Xiaohongshu/Rednote's paradigm — a scrollable feed of photo-forward cards (produce photo + short caption: item, price, farm/story) that a buyer discovers by scrolling, rather than a request-driven search where they have to already know what they want.
+
+**How this fits alongside what's already planned, not replacing it:**
+- `/browse` (Matching Agent) stays as the **intent-driven** path: buyer already knows what they want, states it, gets a direct match.
+- The new **discovery feed** is the **browsing/inspiration** path: buyer doesn't start with a specific ask, they scroll a feed of what's currently available and see something they want. This is the more Rednote-like behavior — discovery before intent.
+- Natural home for this is the **companion website** (already planned as "browsable like Amazon/MercadoLibre") — a Telegram bot can't really do infinite-scroll, but it can send a short "today's picks" digest (a handful of photo cards) as a lightweight taste of the same discovery feel inside the chat.
+- No new data model needed — the feed is a different *presentation* over the existing `Listing` table (photo_url, item, price, farm/town), not a new entity. Sort/filter for the feed: most recent listings first, Premium/"Recommended Seller" listings boosted toward the top — reusing the same tier logic already in the plan rather than inventing a second ranking system.
+- **Depends on listings actually having photos to look like a real feed.** Since photo capture via the Listing Extraction Agent is deferred (no Anthropic key yet), the feed will look sparse/empty until either that AI feature lands, or demo listings are seeded with placeholder produce photos (a stock photo per demo product is enough to make the feed look real for a walkthrough — doesn't require the AI extraction to be working).
+- Optional stretch, not core: lightweight "save"/like interaction per card for a more social feel — skip for today's build unless everything else is done early.
+
+**Where this sits in priority:** this is additive to the B2C flow, not a replacement for `/browse` — keep the earlier sequencing recommendation (B2B/Aggregation Agent as the headline demo moment, B2C as the second beat), and treat the discovery feed as *part of* that B2C beat — "here's how a household discovers what's available" — rather than a third, separate thing to demo.
+
 ### Decisions from planning session 2026-08-16 (afternoon)
 
 - **AI features deferred until an Anthropic API key exists.** No photo→listing extraction yet, no LLM-narrated chat replies yet. Everything else builds now using plain typed input and plain templated bot text. This is a bigger simplification than it sounds: the Negotiation and Aggregation Agents were already planned as deterministic math (see option (b) below) — the only thing AI was adding on top was making the chat text *sound* like an agent talking. Without a key, the bot just states the outcome directly ("Counter-offer: $X — accept? [yes/no]" instead of an LLM-phrased negotiation message). Fully functional, just plainer language. The photo-extraction feature (farmer sends a photo, AI reads it) is the one piece that has no non-AI substitute — it's simply on hold until a key is available, and `/sell` works as a typed-only flow until then.
@@ -101,6 +115,7 @@ Aggregation only demonstrates something if a buyer asks for more than one farmer
 4. Negotiation — inside `/browse` or `/order`, if the matched listing is premium, the bot invites a counter-offer and returns a counter bounded by the farmer's floor price.
 5. Confirm — before finalizing, the bot shows a simulated "confirm to reserve" step (no real charge) and, if a `ReferencePrice` exists for that item, a one-line price comparison ("Farmly: $3/lb · Whole Foods: $5.50/lb").
 6. `/mysheet` — farmer pickup sheet, now built from `OrderLine`s so it correctly reflects both direct and aggregated orders.
+7. **Discovery feed (website, B2C)** — photo-forward scrollable feed of current listings, most-recent-first with Premium listings boosted; optional lightweight "today's picks" digest sent via the bot as a taste of the same discovery feel in chat.
 
 ### Still explicitly out of scope
 
@@ -117,9 +132,10 @@ Aggregation only demonstrates something if a buyer asks for more than one farmer
 4. `/browse` — Matching Agent, free-tier direct match.
 5. Negotiation logic (deterministic + LLM narration) for premium listings.
 6. `/order` + Aggregation Agent (deterministic greedy match + LLM narration).
-7. `/mysheet` pickup sheet across `Order`/`OrderLine`, plus optional companion web page.
-8. Commit, push (only once Walmy confirms — nothing pushed automatically).
-9. Provision hosted Postgres, deploy to Vercel, wire up the Telegram webhook, smoke-test live.
+7. `/mysheet` pickup sheet across `Order`/`OrderLine`, plus companion web page.
+8. Discovery feed on the companion website (photo-forward, Premium-boosted) — seed demo listings with placeholder produce photos so it looks real even before AI photo extraction exists.
+9. Commit, push (only once Walmy confirms — nothing pushed automatically).
+10. Provision hosted Postgres, deploy to Vercel, wire up the Telegram webhook, smoke-test live.
 
 ### Verification (expanded)
 
