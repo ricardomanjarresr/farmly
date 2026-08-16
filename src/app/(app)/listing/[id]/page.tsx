@@ -6,6 +6,8 @@ import { serializeListing } from "@/lib/serialize";
 import { ShippingSection } from "@/components/ShippingBadge";
 import AddToCartButton from "@/components/AddToCartButton";
 
+export const dynamic = "force-dynamic";
+
 export default async function ListingDetailPage({
   params,
 }: {

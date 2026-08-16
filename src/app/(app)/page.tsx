@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { serializeListing } from "@/lib/serialize";
 import ListingCard from "@/components/ListingCard";
 
+export const dynamic = "force-dynamic";
+
 export default async function FeedPage() {
   const listings = await prisma.listing.findMany({
     where: { status: "active", qtyAvailable: { gt: 0 } },
