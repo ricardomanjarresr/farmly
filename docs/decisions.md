@@ -69,3 +69,29 @@ A: Neither is available yet.
 ## 12. Next step before going technical
 
 The team asked for a visual draft/mockup of the full flow first, to confirm as a group before moving into technical build — and wants the technical build split across the team using GitHub branches once confirmed. (See `docs/flow_draft.html` for that draft, published for team review.)
+
+## 13. Buyer card sizing (feedback on flow_draft mockup)
+
+**Feedback: all feed cards must be the same size** — the RED-style masonry (variable card heights) was replaced with a uniform grid (fixed-height photo, fixed-height card) in `docs/mockup_flows.html`.
+
+## 14. Login method — phone + SMS OTP (simulated)
+
+**Q: Is phone number + SMS verification code feasible, and is it free for the low volume of a hackathon demo?**
+
+A: Yes, several providers work for free at this volume (Firebase test numbers, Twilio/Vonage trial credit), but all add real build time and external accounts. For today: **simulated** — buyer enters name + phone, a 6-digit code is shown/auto-filled, no real SMS provider integrated. Replaces the earlier "simulated Google login" decision (#7 revision). Real SMS (Firebase or Twilio) is a stretch goal only if time remains.
+
+## 15. Shipping — farmer configures once, 3 modes
+
+The farmer is asked about shipping **once, on their first Telegram listing** — not per-listing. Three modes, **all three built for the demo** (not simplified):
+
+- **Mode 1 — Free above a minimum.** Farmer sets a minimum purchase amount or weight; orders below that minimum aren't allowed (not a shipping fee — a hard purchase minimum).
+- **Mode 2 — Flat fee.** Charged to the buyer if under a threshold, or always, within a 30km max delivery radius. Team's own note: **not the recommended mode**, built for completeness.
+- **Mode 3 — Aggregated/pooled shipping (the demo's "wow" feature).** When enough buyers (within 30km of the farmer) order the same product to reach a farmer-configured weight/amount threshold before a farmer-configured deadline, the farmer dispatches free to everyone in the pool.
+
+## 16. Aggregated shipping — gamification and edge cases
+
+- **Progress bar** on the feed card and product detail shows progress toward the pooled threshold, with a deadline countdown.
+- **Threshold reached:** the listing stays visible in the feed (does not close) with the bar full and an "Envío gratis asegurado" banner — it keeps accepting new orders, and every buyer who joins after threshold is also guaranteed free shipping.
+- **Deadline passes without reaching threshold:** the buyer is notified and asked to confirm they accept paying the flat fee (mode 2's fee) to proceed with their order; if they don't respond in time, the order auto-cancels.
+- **Geolocation for the 30km check:** buyer's browser geolocation permission by default; if denied/unavailable, fall back to an address search (geocoded, e.g. via a free service like OpenStreetMap/Nominatim). Farmer sets an approximate location once via Telegram.
+- **Demo timing:** real deadlines can be hours/days — too slow to demo live. For today, we pre-seed one listing already in the "threshold reached" state to show that outcome without waiting on a live timer.

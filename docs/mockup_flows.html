@@ -1,0 +1,481 @@
+<title>Farmly Buyer Flows</title>
+<style>
+  :root{
+    --bg:#faf7f1;
+    --board:#f1ece0;
+    --surface:#ffffff;
+    --surface-sunk:#f1ece0;
+    --ink:#211f1a;
+    --ink-soft:#5c574c;
+    --ink-faint:#8a8371;
+    --line:#e3dccb;
+    --green-700:#2f5d3a;
+    --green-600:#3f7d4f;
+    --green-100:#e3ede2;
+    --coral-600:#d6532f;
+    --coral-100:#fbe4da;
+    --gold-500:#c68a2e;
+    --shadow:0 24px 60px -32px rgba(33,25,15,.4);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#15130f; --board:#1c1912; --surface:#211e18; --surface-sunk:#292520;
+      --ink:#f3efe4; --ink-soft:#b8b0a0; --ink-faint:#8f886f; --line:#3a352b;
+      --green-700:#8fc79e; --green-600:#6fae7f; --green-100:#26332a;
+      --coral-600:#ef8a63; --coral-100:#3a281f; --gold-500:#d9a24f;
+      --shadow:0 24px 60px -32px rgba(0,0,0,.7);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#15130f; --board:#1c1912; --surface:#211e18; --surface-sunk:#292520;
+    --ink:#f3efe4; --ink-soft:#b8b0a0; --ink-faint:#8f886f; --line:#3a352b;
+    --green-700:#8fc79e; --green-600:#6fae7f; --green-100:#26332a;
+    --coral-600:#ef8a63; --coral-100:#3a281f; --gold-500:#d9a24f;
+    --shadow:0 24px 60px -32px rgba(0,0,0,.7);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;}
+  h1,h2,h3{font-family:Georgia,"Iowan Old Style","Palatino Linotype",serif;font-weight:600;text-wrap:balance;margin:0;}
+
+  .top{max-width:1100px;margin:0 auto;padding:48px 24px 8px;}
+  .eyebrow{font-size:12.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--green-600);margin:0 0 10px;}
+  .top h1{font-size:clamp(26px,3.6vw,34px);}
+  .top p{color:var(--ink-soft);font-size:15px;max-width:64ch;line-height:1.55;margin:12px 0 0;}
+
+  .legend{
+    max-width:1100px;margin:22px auto 0;padding:0 24px;
+    display:flex;flex-wrap:wrap;gap:10px;
+  }
+  .legend span{
+    font-size:12px;color:var(--ink-soft);background:var(--surface);border:1px solid var(--line);
+    border-radius:999px;padding:6px 12px;display:flex;align-items:center;gap:6px;
+  }
+  .legend b{color:var(--green-700);font-weight:700;}
+
+  /* ---- board ---- */
+  .board-wrap{overflow-x:auto;padding:40px 0 80px;}
+  .board{
+    background:var(--board);
+    min-width:max-content;
+    padding:40px 60px;
+    display:flex;
+    align-items:flex-start;
+    gap:64px;
+    position:relative;
+  }
+
+  .col{display:flex;flex-direction:column;align-items:center;gap:16px;position:relative;}
+  .col-label{font-size:12.5px;font-weight:700;color:var(--green-700);text-transform:uppercase;letter-spacing:.07em;}
+
+  .frame{
+    width:300px;height:640px;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:34px;
+    box-shadow:var(--shadow);
+    padding:10px;
+    position:relative;
+    flex:none;
+  }
+  .frame-inner{
+    width:100%;height:100%;border-radius:26px;overflow:hidden;position:relative;
+    background:var(--surface);display:flex;flex-direction:column;
+  }
+  .notch{
+    position:absolute;top:6px;left:50%;transform:translateX(-50%);
+    width:90px;height:20px;background:var(--ink);border-radius:12px;z-index:5;opacity:.85;
+  }
+
+  .screen{flex:1;display:flex;flex-direction:column;min-height:0;padding-top:26px;}
+  .scrollarea{flex:1;overflow-y:auto;}
+
+  /* ---- app chrome ---- */
+  .app-top{display:flex;align-items:center;justify-content:space-between;padding:6px 14px 10px;}
+  .app-top .word{font-family:Georgia,serif;font-weight:700;font-size:16px;color:var(--green-700);}
+  .app-top .icon{width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--ink-soft);}
+
+  .search-bar{margin:0 14px 10px;background:var(--surface-sunk);border:1px solid var(--line);border-radius:10px;padding:8px 11px;font-size:12.5px;color:var(--ink-faint);display:flex;align-items:center;gap:7px;}
+  .chips{display:flex;gap:7px;padding:0 14px 12px;overflow-x:auto;}
+  .chip{flex:none;font-size:11px;padding:5px 11px;border-radius:999px;border:1px solid var(--line);color:var(--ink-soft);white-space:nowrap;}
+  .chip.active{background:var(--green-600);border-color:var(--green-600);color:#fff;}
+
+  .bottom-nav{
+    display:flex;justify-content:space-around;align-items:center;
+    padding:10px 6px 14px;border-top:1px solid var(--line);background:var(--surface);
+  }
+  .nav-item{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:9.5px;color:var(--ink-faint);}
+  .nav-item .ic{font-size:16px;}
+  .nav-item.active{color:var(--green-700);font-weight:700;}
+
+  /* ---- feed grid (uniform cards) ---- */
+  .masonry{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:0 8px 10px;}
+  .mcard{border-radius:12px;overflow:hidden;background:var(--surface);border:1px solid var(--line);position:relative;display:flex;flex-direction:column;}
+  .mcard .photo{width:100%;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;background:var(--surface-sunk);font-size:30px;flex:none;}
+  .mcard .meta{padding:7px 8px 9px;flex:1;display:flex;flex-direction:column;}
+  .mcard .price{font-family:Georgia,serif;font-weight:700;font-size:12.5px;color:var(--coral-600);}
+  .mcard .name{font-size:10.5px;color:var(--ink);line-height:1.3;margin:2px 0 2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.6em;}
+  .mcard .farm{font-size:9px;color:var(--ink-faint);margin-top:auto;}
+  .mcard .like{position:absolute;top:6px;right:6px;width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,.85);display:flex;align-items:center;justify-content:center;font-size:10px;}
+  .ship{padding:0 8px 7px;}
+  .ship-label{display:flex;justify-content:space-between;font-size:8.5px;color:var(--ink-faint);margin-bottom:3px;}
+  .ship-track{height:5px;border-radius:3px;background:var(--surface-sunk);overflow:hidden;}
+  .ship-fill{height:100%;background:var(--green-600);border-radius:3px;}
+  .ship-badge{
+    font-size:8.5px;font-weight:700;color:var(--green-700);background:var(--green-100);
+    border-radius:5px;padding:3px 6px;display:inline-flex;align-items:center;gap:3px;
+  }
+  :root[data-theme="dark"] .mcard .like{background:rgba(0,0,0,.55);}
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .mcard .like{background:rgba(0,0,0,.55);}}
+  .tap-hint{
+    position:absolute;inset:0;border:2px dashed var(--coral-600);border-radius:12px;
+    display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;
+  }
+
+  /* ---- detail screen ---- */
+  .detail-photo{position:relative;height:300px;background:var(--surface-sunk);display:flex;align-items:center;justify-content:center;font-size:58px;flex:none;}
+  .detail-back{position:absolute;top:12px;left:12px;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.9);display:flex;align-items:center;justify-content:center;font-size:13px;z-index:2;}
+  .dots{position:absolute;bottom:10px;left:0;right:0;display:flex;justify-content:center;gap:4px;}
+  .dots span{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.6);}
+  .dots span.on{background:#fff;}
+  .detail-body{padding:14px 16px;}
+  .detail-price{font-family:Georgia,serif;font-weight:700;font-size:19px;color:var(--coral-600);}
+  .detail-title{font-size:13.5px;color:var(--ink);margin:3px 0 8px;line-height:1.4;}
+  .farm-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-bottom:12px;}
+  .farm-avatar{width:26px;height:26px;border-radius:50%;background:var(--green-100);display:flex;align-items:center;justify-content:center;font-size:12px;}
+  .farm-row .fn{font-size:12px;font-weight:650;color:var(--ink);}
+  .farm-row .fl{font-size:10.5px;color:var(--ink-faint);}
+
+  .section-label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-faint);margin:0 0 8px;}
+  .comment{display:flex;gap:8px;margin-bottom:10px;}
+  .comment .av{width:20px;height:20px;border-radius:50%;background:var(--surface-sunk);flex:none;}
+  .comment .txt{font-size:11.5px;color:var(--ink-soft);line-height:1.4;}
+  .comment .txt b{color:var(--ink);}
+
+  .more-farm{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;}
+  .more-farm .mini{flex:none;width:74px;}
+  .more-farm .mini .ph{width:74px;height:74px;border-radius:9px;background:var(--surface-sunk);display:flex;align-items:center;justify-content:center;font-size:20px;}
+  .more-farm .mini .pr{font-size:10px;color:var(--coral-600);font-weight:700;margin-top:3px;}
+
+  .buy-fixed{padding:10px 16px 14px;border-top:1px solid var(--line);background:var(--surface);}
+  .buy-fixed button{width:100%;background:var(--coral-600);color:#fff;border:none;border-radius:11px;padding:11px;font-size:13px;font-weight:700;}
+
+  /* ---- overlay + bottom sheet (screen 3) ---- */
+  .overlay-frame .frame-inner{position:relative;}
+  .dim{position:absolute;inset:0;background:rgba(20,16,10,.45);z-index:3;}
+  .sheet{
+    position:absolute;left:0;right:0;bottom:0;z-index:4;
+    background:var(--surface);border-radius:20px 20px 0 0;
+    padding:16px 16px 18px;box-shadow:0 -12px 30px -20px rgba(0,0,0,.4);
+  }
+  .sheet-grab{width:34px;height:4px;border-radius:3px;background:var(--line);margin:0 auto 12px;}
+  .sheet h3{font-size:14px;margin-bottom:2px;}
+  .sheet .sub{font-size:11px;color:var(--ink-faint);margin-bottom:14px;}
+  .field-label{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-faint);margin-bottom:6px;}
+  .stepper{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+  .stepper button{width:26px;height:26px;border-radius:50%;border:1px solid var(--line);background:var(--surface-sunk);color:var(--ink);font-size:14px;}
+  .stepper .qty{font-size:13px;min-width:14px;text-align:center;}
+  .divider{height:1px;background:var(--line);margin:12px 0;}
+  .google-btn{
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    border:1px solid var(--line);border-radius:10px;padding:10px;font-size:12.5px;color:var(--ink);
+    background:var(--surface);margin-bottom:8px;font-weight:600;
+  }
+  .or-line{text-align:center;font-size:10px;color:var(--ink-faint);margin:6px 0;}
+  .email-link{text-align:center;font-size:11.5px;color:var(--green-700);text-decoration:underline;margin-bottom:14px;}
+  .confirm-btn{width:100%;background:var(--coral-600);color:#fff;border:none;border-radius:11px;padding:12px;font-size:13px;font-weight:700;}
+  .otp-box{width:32px;height:38px;border:1px solid var(--line);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--green-700);background:var(--surface-sunk);font-variant-numeric:tabular-nums;}
+
+  /* ---- search screen ---- */
+  .recent-row{padding:0 14px 4px;}
+  .sort-pill{margin:0 14px 10px;display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--ink-soft);border:1px solid var(--line);border-radius:999px;padding:5px 10px;}
+
+  /* ---- saved / orders lists ---- */
+  .order-card{margin:0 14px 10px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;gap:10px;align-items:center;}
+  .order-card .ph{width:44px;height:44px;border-radius:9px;background:var(--surface-sunk);display:flex;align-items:center;justify-content:center;font-size:18px;flex:none;}
+  .order-card .ot{font-size:12px;font-weight:650;color:var(--ink);}
+  .order-card .of{font-size:10.5px;color:var(--ink-faint);}
+  .status{margin-left:auto;font-size:9.5px;font-weight:700;padding:4px 8px;border-radius:999px;white-space:nowrap;}
+  .status.pending{background:var(--coral-100);color:var(--coral-600);}
+  .status.confirmed{background:var(--green-100);color:var(--green-700);}
+
+  .empty-note{padding:14px;font-size:11px;color:var(--ink-faint);text-align:center;line-height:1.5;}
+
+  /* ---- annotations ---- */
+  .callouts{width:300px;display:flex;flex-direction:column;gap:8px;margin-top:2px;}
+  .callout{font-size:11.5px;color:var(--ink-soft);line-height:1.5;display:flex;gap:8px;}
+  .callout .num{flex:none;width:17px;height:17px;border-radius:50%;background:var(--green-600);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px;}
+  .callout b{color:var(--ink);}
+
+  /* ---- flow connector ---- */
+  .connector{display:flex;align-items:center;align-self:center;color:var(--ink-faint);font-size:22px;padding-top:280px;}
+  .connector .tag{
+    font-size:10.5px;color:var(--ink-soft);background:var(--surface);border:1px solid var(--line);
+    border-radius:8px;padding:4px 9px;white-space:nowrap;margin-bottom:6px;
+  }
+  .connector-col{display:flex;flex-direction:column;align-items:center;}
+</style>
+
+<div class="top">
+  <p class="eyebrow">Farmly &middot; feature/web-buyer-experience</p>
+  <h1>Buyer flow &mdash; screen by screen</h1>
+  <p>Every decision from today's walkthrough, laid out as connected screens. Scroll right to follow the flow: Feed &rarr; Product detail &rarr; Buy sheet, plus the three other tabs reachable from the bottom nav.</p>
+</div>
+<div class="legend">
+  <span><b>Nav</b> Feed &middot; Buscar &middot; Guardados &middot; Pedidos, fixed bottom bar</span>
+  <span><b>Feed</b> 2-col masonry, RED-style</span>
+  <span><b>Detail</b> full-screen, not a modal</span>
+  <span><b>Login</b> simulated only &mdash; no real auth</span>
+</div>
+
+<div class="board-wrap">
+<div class="board">
+
+  <!-- SCREEN 1: FEED -->
+  <div class="col">
+    <div class="col-label">① Feed (home)</div>
+    <div class="frame">
+      <div class="notch"></div>
+      <div class="frame-inner">
+        <div class="screen">
+          <div class="app-top"><span class="word">🍅 Farmly</span><span class="icon">🔔</span></div>
+          <div class="scrollarea">
+            <div class="masonry">
+              <div class="mcard"><div class="photo">🍅</div><div class="like">♡</div><div class="meta"><div class="price">$3.50/lb</div><div class="name">Heirloom tomatoes, picked today</div><div class="farm">Rio Verde Farm</div></div><div class="ship"><div class="ship-label"><span>32/50kg envío grupal</span><span>2d</span></div><div class="ship-track"><div class="ship-fill" style="width:64%;"></div></div></div></div>
+              <div class="mcard"><div class="photo">🥚</div><div class="like">♥</div><div class="meta"><div class="price">$6.00/doz</div><div class="name">Pasture-raised eggs</div><div class="farm">Green Valley</div></div><div class="ship"><div class="ship-badge">✅ Envío gratis asegurado</div></div></div>
+              <div class="mcard"><div class="photo">🥬</div><div class="like">♡</div><div class="meta"><div class="price">$2.00/head</div><div class="name">Butter lettuce</div><div class="farm">Sunrise Acres</div></div></div>
+              <div class="mcard"><div class="photo">🍓</div><div class="like">♡</div><div class="meta"><div class="price">$4.25/pt</div><div class="name">Strawberries, last of season</div><div class="farm">Rio Verde Farm</div></div></div>
+              <div class="mcard"><div class="photo">🍯</div><div class="like">♡</div><div class="meta"><div class="price">$9.00/jar</div><div class="name">Raw wildflower honey</div><div class="farm">Green Valley</div></div></div>
+              <div class="mcard"><div class="photo">🌽</div><div class="like">♡</div><div class="meta"><div class="price">$0.75/ea</div><div class="name">Sweet corn, 6 left</div><div class="farm">Sunrise Acres</div></div></div>
+            </div>
+          </div>
+          <div class="bottom-nav">
+            <div class="nav-item active"><span class="ic">▦</span>Feed</div>
+            <div class="nav-item"><span class="ic">⌕</span>Buscar</div>
+            <div class="nav-item"><span class="ic">♡</span>Guardados</div>
+            <div class="nav-item"><span class="ic">▤</span>Pedidos</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="callouts">
+      <div class="callout"><span class="num">1</span><span>Grid Pinterest de 2 columnas, alturas variables &mdash; se siente denso y explorable.</span></div>
+      <div class="callout"><span class="num">2</span><span>Tap en cualquier tarjeta &rarr; abre <b>pantalla completa</b>, no un modal.</span></div>
+    </div>
+  </div>
+
+  <div class="connector-col" style="padding-top:280px;">
+    <div class="tag">tap tarjeta</div>
+    <div style="font-size:24px;color:var(--ink-faint);">&#8594;</div>
+  </div>
+
+  <!-- SCREEN 2: DETAIL -->
+  <div class="col">
+    <div class="col-label">② Product detail</div>
+    <div class="frame">
+      <div class="notch"></div>
+      <div class="frame-inner">
+        <div class="screen" style="padding-top:0;">
+          <div class="scrollarea">
+            <div class="detail-photo">🍅
+              <div class="detail-back">←</div>
+              <div class="dots"><span class="on"></span><span></span><span></span></div>
+            </div>
+            <div class="detail-body">
+              <div class="detail-price">$3.50/lb</div>
+              <div class="detail-title">Heirloom tomatoes, picked this morning. No pesticides.</div>
+              <div class="farm-row">
+                <div class="farm-avatar">🌾</div>
+                <div><div class="fn">Rio Verde Farm</div><div class="fl">2.1 mi away</div></div>
+              </div>
+              <p class="section-label">Envío agregado</p>
+              <div style="margin-bottom:14px;">
+                <div class="ship-label" style="font-size:10.5px;"><span>32/50kg para envío gratis</span><span>quedan 2 días</span></div>
+                <div class="ship-track" style="height:7px;"><div class="ship-fill" style="width:64%;"></div></div>
+                <p style="font-size:10px;color:var(--ink-faint);margin:6px 0 0;">Si no se junta el grupo antes del deadline, te avisamos para confirmar un envío de $4.00 (radio de 30km).</p>
+              </div>
+              <p class="section-label">Comentarios</p>
+              <div class="comment"><div class="av"></div><div class="txt"><b>Ana:</b> compré la semana pasada, riquísimos 🍅</div></div>
+              <div class="comment"><div class="av"></div><div class="txt"><b>Jorge:</b> ¿hasta qué día tienen disponible?</div></div>
+              <p class="section-label" style="margin-top:14px;">Más de Rio Verde Farm</p>
+              <div class="more-farm">
+                <div class="mini"><div class="ph">🍓</div><div class="pr">$4.25/pt</div></div>
+                <div class="mini"><div class="ph">🌽</div><div class="pr">$0.75/ea</div></div>
+                <div class="mini"><div class="ph">🥒</div><div class="pr">$1.80/lb</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="buy-fixed"><button>Comprar &middot; $3.50/lb</button></div>
+        </div>
+      </div>
+    </div>
+    <div class="callouts">
+      <div class="callout"><span class="num">3</span><span>Carrusel de fotos (puntos arriba), comentarios, y <b>&ldquo;más de este farmer&rdquo;</b> &mdash; alimenta el rabbit hole.</span></div>
+      <div class="callout"><span class="num">4</span><span>Botón <b>Comprar fijo</b> abajo, siempre visible sin importar el scroll.</span></div>
+    </div>
+  </div>
+
+  <div class="connector-col" style="padding-top:280px;">
+    <div class="tag">tap Comprar</div>
+    <div style="font-size:24px;color:var(--ink-faint);">&#8594;</div>
+  </div>
+
+  <!-- SCREEN 3: BUY BOTTOM SHEET -->
+  <div class="col">
+    <div class="col-label">③ Buy &mdash; bottom sheet</div>
+    <div class="frame overlay-frame">
+      <div class="notch"></div>
+      <div class="frame-inner">
+        <div class="detail-photo" style="height:100%;">🍅
+          <div class="detail-back">←</div>
+        </div>
+        <div class="dim"></div>
+        <div class="sheet">
+          <div class="sheet-grab"></div>
+          <h3>Heirloom tomatoes</h3>
+          <div class="sub">Rio Verde Farm &middot; $3.50/lb</div>
+          <div class="field-label">Cantidad (lb)</div>
+          <div class="stepper"><button>&minus;</button><span class="qty">2</span><button>&plus;</button></div>
+          <div class="divider"></div>
+          <div class="field-label">Tu nombre</div>
+          <div class="google-btn" style="justify-content:flex-start;padding:9px 11px;color:var(--ink-faint);font-weight:400;">Ricardo Manjarres</div>
+          <div class="field-label">Tu teléfono</div>
+          <div class="google-btn" style="justify-content:flex-start;padding:9px 11px;color:var(--ink-faint);font-weight:400;">(617) 555&ndash;0148</div>
+          <div class="or-line">📱 código de 6 dígitos enviado por SMS</div>
+          <div style="display:flex;gap:6px;margin-bottom:12px;">
+            <div class="otp-box">4</div><div class="otp-box">8</div><div class="otp-box">2</div><div class="otp-box">1</div><div class="otp-box">9</div><div class="otp-box">0</div>
+          </div>
+          <button class="confirm-btn">Confirmar &middot; $7.00</button>
+        </div>
+      </div>
+    </div>
+    <div class="callouts">
+      <div class="callout"><span class="num">5</span><span>Sube como <b>bottom sheet</b> &mdash; no pierdes el contexto del producto detrás.</span></div>
+      <div class="callout"><span class="num">6</span><span>Login por <b>teléfono con código SMS</b> &mdash; pero <b>simulado</b>: no hay proveedor externo, el código se autocompleta. Cero costo, cero cuenta nueva bajo presión de tiempo.</span></div>
+      <div class="callout"><span class="num">7</span><span>Ese nombre/teléfono es lo que luego identifica &ldquo;Guardados&rdquo; y &ldquo;Pedidos&rdquo;.</span></div>
+    </div>
+  </div>
+
+  <div class="connector-col" style="padding-top:280px;">
+    <div class="tag">bottom nav</div>
+    <div style="font-size:24px;color:var(--ink-faint);">&#8594;</div>
+  </div>
+
+  <!-- SCREEN 4: SEARCH -->
+  <div class="col">
+    <div class="col-label">④ Buscar</div>
+    <div class="frame">
+      <div class="notch"></div>
+      <div class="frame-inner">
+        <div class="screen">
+          <div class="app-top"><span class="word">Buscar</span></div>
+          <div class="search-bar">⌕&nbsp; tomate, farmer, miel&hellip;</div>
+          <div class="chips">
+            <span class="chip active">Todo</span><span class="chip">Verduras</span><span class="chip">Frutas</span><span class="chip">Huevos y lácteos</span>
+          </div>
+          <div class="sort-pill">↕ Ordenar por: Cercanía</div>
+          <div class="recent-row"><p class="section-label" style="margin:6px 0 8px;">Búsquedas recientes</p></div>
+          <div class="chips" style="padding-top:0;">
+            <span class="chip">tomate</span><span class="chip">huevos</span><span class="chip">miel</span><span class="chip">fresas</span>
+          </div>
+          <div class="scrollarea">
+            <div class="masonry" style="margin-top:8px;">
+              <div class="mcard"><div class="photo">🍅</div><div class="meta"><div class="price">$3.50/lb</div><div class="name">Heirloom tomatoes</div><div class="farm">Rio Verde Farm</div></div></div>
+              <div class="mcard"><div class="photo">🍯</div><div class="meta"><div class="price">$9.00/jar</div><div class="name">Wildflower honey</div><div class="farm">Green Valley</div></div></div>
+            </div>
+          </div>
+          <div class="bottom-nav">
+            <div class="nav-item"><span class="ic">▦</span>Feed</div>
+            <div class="nav-item active"><span class="ic">⌕</span>Buscar</div>
+            <div class="nav-item"><span class="ic">♡</span>Guardados</div>
+            <div class="nav-item"><span class="ic">▤</span>Pedidos</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="callouts">
+      <div class="callout"><span class="num">8</span><span>Texto + categorías + orden por cercanía + recientes &mdash; los 4 que pidieron.</span></div>
+    </div>
+  </div>
+
+  <!-- SCREEN 5: SAVED -->
+  <div class="col">
+    <div class="col-label">⑤ Guardados</div>
+    <div class="frame">
+      <div class="notch"></div>
+      <div class="frame-inner">
+        <div class="screen">
+          <div class="app-top"><span class="word">Guardados</span></div>
+          <div class="scrollarea">
+            <div class="masonry">
+              <div class="mcard"><div class="photo">🥚</div><div class="like">♥</div><div class="meta"><div class="price">$6.00/doz</div><div class="name">Pasture-raised eggs</div><div class="farm">Green Valley</div></div></div>
+              <div class="mcard"><div class="photo">🍓</div><div class="like">♥</div><div class="meta"><div class="price">$4.25/pt</div><div class="name">Strawberries</div><div class="farm">Rio Verde Farm</div></div></div>
+            </div>
+          </div>
+          <div class="bottom-nav">
+            <div class="nav-item"><span class="ic">▦</span>Feed</div>
+            <div class="nav-item"><span class="ic">⌕</span>Buscar</div>
+            <div class="nav-item active"><span class="ic">♡</span>Guardados</div>
+            <div class="nav-item"><span class="ic">▤</span>Pedidos</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="callouts">
+      <div class="callout"><span class="num">9</span><span>Ligado al login simulado &mdash; mismo correo/nombre en este dispositivo.</span></div>
+    </div>
+  </div>
+
+  <!-- SCREEN 6: ORDERS -->
+  <div class="col">
+    <div class="col-label">⑥ Pedidos</div>
+    <div class="frame">
+      <div class="notch"></div>
+      <div class="frame-inner">
+        <div class="screen">
+          <div class="app-top"><span class="word">Pedidos</span></div>
+          <div class="scrollarea">
+            <div class="order-card"><div class="ph">🍅</div><div><div class="ot">Heirloom tomatoes &middot; 2lb</div><div class="of">Rio Verde Farm</div></div><span class="status pending">Pendiente</span></div>
+            <div class="order-card"><div class="ph">🥚</div><div><div class="ot">Pasture eggs &middot; 1 doz</div><div class="of">Green Valley</div></div><span class="status confirmed">Confirmado</span></div>
+            <div class="empty-note">Buscamos tus pedidos por el correo/teléfono que usaste al comprar &mdash; sin contraseña.</div>
+          </div>
+          <div class="bottom-nav">
+            <div class="nav-item"><span class="ic">▦</span>Feed</div>
+            <div class="nav-item"><span class="ic">⌕</span>Buscar</div>
+            <div class="nav-item"><span class="ic">♡</span>Guardados</div>
+            <div class="nav-item active"><span class="ic">▤</span>Pedidos</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="callouts">
+      <div class="callout"><span class="num">10</span><span>Estatus <b>Pendiente</b> vs <b>Confirmado</b> &mdash; refleja lo que el farmer marca en Telegram.</span></div>
+    </div>
+  </div>
+
+  <!-- SHIPPING STATES -->
+  <div class="col">
+    <div class="col-label">⑦ Envío agregado &mdash; estados</div>
+    <div style="width:300px;display:flex;flex-direction:column;gap:14px;">
+      <div class="modal" style="max-width:none;padding:16px;">
+        <div class="ptitle" style="font-size:13px;">① En progreso</div>
+        <div class="ship-label" style="font-size:10.5px;margin-top:8px;"><span>32/50kg</span><span>2 días restantes</span></div>
+        <div class="ship-track" style="height:7px;"><div class="ship-fill" style="width:64%;"></div></div>
+      </div>
+      <div class="modal" style="max-width:none;padding:16px;background:var(--green-100);border-color:var(--green-600);">
+        <div class="ptitle" style="font-size:13px;color:var(--green-700);">② Umbral alcanzado</div>
+        <p style="font-size:11px;color:var(--green-700);margin:6px 0 0;">✅ Envío gratis asegurado &mdash; sigue recibiendo compras, todas quedan con envío gratis.</p>
+      </div>
+      <div class="modal" style="max-width:none;padding:16px;background:var(--coral-100);border-color:var(--coral-600);">
+        <div class="ptitle" style="font-size:13px;color:var(--coral-600);">③ Deadline vencido, sin umbral</div>
+        <p style="font-size:11px;color:var(--ink-soft);margin:6px 0 0;">Aviso al comprador: &ldquo;No se juntó el grupo &mdash; ¿confirmas $4.00 de envío?&rdquo; Sin respuesta a tiempo &rarr; pedido cancelado.</p>
+      </div>
+    </div>
+    <div class="callouts">
+      <div class="callout"><span class="num">11</span><span>El farmer configura umbral + deadline <b>una sola vez</b>, en su primer post por Telegram.</span></div>
+      <div class="callout"><span class="num">12</span><span>Para el demo: estado ② viene <b>pre-sembrado</b>, no depende de un timer en vivo.</span></div>
+    </div>
+  </div>
+
+</div>
+</div>
