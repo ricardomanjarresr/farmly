@@ -1,0 +1,384 @@
+<title>Farmly Flow Draft</title>
+<style>
+  :root{
+    --bg:#faf7f1;
+    --surface:#ffffff;
+    --surface-sunk:#f1ece0;
+    --ink:#211f1a;
+    --ink-soft:#5c574c;
+    --line:#e3dccb;
+    --green-700:#2f5d3a;
+    --green-600:#3f7d4f;
+    --green-100:#e3ede2;
+    --coral-600:#d6532f;
+    --coral-100:#fbe4da;
+    --gold-500:#c68a2e;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#171510;
+      --surface:#211e18;
+      --surface-sunk:#292520;
+      --ink:#f3efe4;
+      --ink-soft:#b8b0a0;
+      --line:#3a352b;
+      --green-700:#8fc79e;
+      --green-600:#6fae7f;
+      --green-100:#26332a;
+      --coral-600:#ef8a63;
+      --coral-100:#3a281f;
+      --gold-500:#d9a24f;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#171510;
+    --surface:#211e18;
+    --surface-sunk:#292520;
+    --ink:#f3efe4;
+    --ink-soft:#b8b0a0;
+    --line:#3a352b;
+    --green-700:#8fc79e;
+    --green-600:#6fae7f;
+    --green-100:#26332a;
+    --coral-600:#ef8a63;
+    --coral-100:#3a281f;
+    --gold-500:#d9a24f;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .page{max-width:980px;margin:0 auto;padding:56px 24px 96px;}
+
+  h1,h2,h3{font-family:Georgia,"Iowan Old Style","Palatino Linotype",serif;font-weight:600;text-wrap:balance;margin:0;}
+  .eyebrow{
+    font-size:12.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+    color:var(--green-600);margin:0 0 10px;
+  }
+  h1{font-size:clamp(28px,4vw,38px);color:var(--ink);letter-spacing:-.01em;}
+  .lede{font-size:16px;color:var(--ink-soft);max-width:62ch;line-height:1.55;margin:14px 0 0;}
+
+  header.top{padding-bottom:40px;border-bottom:1px solid var(--line);margin-bottom:48px;}
+
+  section{margin-bottom:64px;}
+  section h2{font-size:22px;margin-bottom:6px;}
+  .section-note{color:var(--ink-soft);font-size:14.5px;margin:0 0 28px;max-width:60ch;line-height:1.5;}
+
+  /* ---- flow ---- */
+  .flow{
+    display:grid;
+    grid-template-columns:repeat(6,1fr);
+    gap:0;
+    position:relative;
+  }
+  .flow::before{
+    content:"";
+    position:absolute;top:26px;left:5%;right:5%;height:2px;
+    background:repeating-linear-gradient(to right,var(--line) 0 8px,transparent 8px 14px);
+  }
+  .flow-step{position:relative;padding:0 8px;text-align:center;}
+  .flow-num{
+    width:52px;height:52px;border-radius:50%;background:var(--surface);
+    border:2px solid var(--green-600);color:var(--green-700);
+    display:flex;align-items:center;justify-content:center;
+    font-family:Georgia,serif;font-weight:700;font-size:19px;
+    margin:0 auto 14px;position:relative;z-index:1;
+  }
+  .flow-step p{margin:0;font-size:12.5px;line-height:1.45;color:var(--ink-soft);}
+  .flow-step b{display:block;font-size:13.5px;color:var(--ink);margin-bottom:4px;font-weight:650;}
+
+  @media (max-width:760px){
+    .flow{grid-template-columns:1fr 1fr;row-gap:32px;}
+    .flow::before{display:none;}
+  }
+
+  /* ---- phone / feed mockup ---- */
+  .device{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:22px;
+    box-shadow:0 20px 50px -30px rgba(0,0,0,.35);
+    overflow:hidden;
+    max-width:380px;
+    margin:0 auto;
+  }
+  .device-bar{
+    display:flex;align-items:center;gap:10px;
+    padding:14px 16px 10px;
+  }
+  .device-bar .word{font-family:Georgia,serif;font-weight:700;font-size:17px;color:var(--green-700);}
+  .search{
+    margin:0 16px 12px;
+    background:var(--surface-sunk);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:9px 12px;
+    font-size:13px;color:var(--ink-soft);
+    display:flex;align-items:center;gap:8px;
+  }
+  .chips{display:flex;gap:8px;padding:0 16px 14px;overflow-x:auto;}
+  .chip{
+    flex:none;font-size:12px;padding:6px 12px;border-radius:999px;
+    border:1px solid var(--line);color:var(--ink-soft);white-space:nowrap;
+  }
+  .chip.active{background:var(--green-600);border-color:var(--green-600);color:#fff;}
+
+  .feed-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px;background:var(--line);}
+  .card{background:var(--surface);position:relative;}
+  .card .photo{
+    aspect-ratio:4/5;background:var(--surface-sunk);
+    display:flex;align-items:center;justify-content:center;font-size:34px;
+  }
+  .card .meta{padding:9px 10px 12px;}
+  .card .price{font-family:Georgia,serif;font-weight:700;font-size:15px;color:var(--coral-600);font-variant-numeric:tabular-nums;}
+  .card .name{font-size:12.5px;color:var(--ink);margin:2px 0 3px;line-height:1.3;}
+  .card .farm{font-size:11px;color:var(--ink-soft);}
+  .card .like{
+    position:absolute;top:8px;right:8px;
+    width:26px;height:26px;border-radius:50%;
+    background:rgba(255,255,255,.85);
+    display:flex;align-items:center;justify-content:center;font-size:13px;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .card .like{background:rgba(0,0,0,.55);}}
+  :root[data-theme="dark"] .card .like{background:rgba(0,0,0,.55);}
+
+  .two-col{display:grid;grid-template-columns:1.05fr 1fr;gap:40px;align-items:start;}
+  @media (max-width:760px){.two-col{grid-template-columns:1fr;}}
+  .callout-list{list-style:none;margin:20px 0 0;padding:0;display:flex;flex-direction:column;gap:14px;}
+  .callout-list li{display:flex;gap:12px;font-size:14.5px;line-height:1.5;color:var(--ink-soft);}
+  .callout-list .dot{flex:none;width:6px;height:6px;border-radius:50%;background:var(--green-600);margin-top:8px;}
+  .callout-list b{color:var(--ink);font-weight:650;}
+
+  /* ---- buy modal mockup ---- */
+  .modal{
+    background:var(--surface);border:1px solid var(--line);border-radius:16px;
+    padding:20px;max-width:340px;box-shadow:0 20px 50px -30px rgba(0,0,0,.35);
+  }
+  .modal .ptitle{font-family:Georgia,serif;font-weight:700;font-size:16px;margin-bottom:2px;}
+  .modal .pfarm{font-size:12.5px;color:var(--ink-soft);margin-bottom:16px;}
+  .row-field{margin-bottom:12px;}
+  .row-field label{display:block;font-size:11.5px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;}
+  .stepper{display:flex;align-items:center;gap:14px;}
+  .stepper button{
+    width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:var(--surface-sunk);
+    color:var(--ink);font-size:16px;cursor:default;
+  }
+  .stepper .qty{font-variant-numeric:tabular-nums;font-size:15px;min-width:16px;text-align:center;}
+  .fake-input{
+    border:1px solid var(--line);border-radius:9px;padding:9px 11px;font-size:13.5px;color:var(--ink-soft);background:var(--surface-sunk);
+  }
+  .buy-btn{
+    margin-top:6px;width:100%;padding:12px;border-radius:10px;border:none;
+    background:var(--coral-600);color:#fff;font-size:14.5px;font-weight:650;text-align:center;
+  }
+
+  /* ---- telegram mockup ---- */
+  .tg{
+    background:var(--surface);border:1px solid var(--line);border-radius:16px;
+    padding:18px 18px 20px;max-width:400px;
+  }
+  .tg .who{font-size:12px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;}
+  .bubble{max-width:85%;padding:9px 13px;border-radius:14px;font-size:13.5px;line-height:1.45;margin-bottom:8px;}
+  .bubble.in{background:var(--surface-sunk);border-bottom-left-radius:4px;}
+  .bubble.out{background:var(--green-100);color:var(--green-700);margin-left:auto;border-bottom-right-radius:4px;}
+  .bubble code{background:rgba(0,0,0,.08);padding:1px 5px;border-radius:5px;font-size:12px;}
+
+  footer.confirm{
+    margin-top:20px;padding:24px 26px;border-radius:16px;
+    background:var(--green-100);border:1px solid var(--line);
+  }
+  footer.confirm h3{font-size:16px;color:var(--green-700);margin-bottom:8px;}
+  footer.confirm p{font-size:14px;color:var(--ink-soft);line-height:1.55;margin:0 0 14px;}
+  footer.confirm .branches{display:flex;flex-wrap:wrap;gap:8px;}
+  footer.confirm .branch{
+    font-size:12px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:5px 10px;color:var(--ink);
+  }
+</style>
+
+<div class="page">
+
+  <header class="top">
+    <p class="eyebrow">Farmly &middot; draft for team review</p>
+    <h1>A Red Note&ndash;style discovery feed for fresh produce</h1>
+    <p class="lede">This is a walkthrough of how the product would work end to end, built from what the team has confirmed so far. Nothing is coded yet &mdash; review this together and tell me what to change before we split into branches.</p>
+  </header>
+
+  <section>
+    <p class="eyebrow">The loop</p>
+    <h2>End-to-end flow</h2>
+    <p class="section-note">Six steps, entirely automatic once a farmer posts. No login for buyers, no negotiation, no B2B &mdash; browse, tap, buy.</p>
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-num">1</div>
+        <b>Farmer posts on Telegram</b>
+        <p>Photo + voice/text: name, price, qty, expiration</p>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">2</div>
+        <b>AI builds the listing</b>
+        <p>Structured post: product, price, farm, photo</p>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">3</div>
+        <b>Post joins the feed</b>
+        <p>Appears instantly on the web discovery feed</p>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">4</div>
+        <b>Buyer discovers</b>
+        <p>Scrolls, searches, likes, saves &mdash; no account</p>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">5</div>
+        <b>Buyer taps Buy</b>
+        <p>Picks qty, gives name + phone, confirms &mdash; on the web</p>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">6</div>
+        <b>Farmer sees the order</b>
+        <p>Checks <code>/pedidos</code> in Telegram, fulfills it</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Buyer side</p>
+    <h2>The feed &mdash; what a buyer sees</h2>
+    <div class="two-col">
+      <div class="device">
+        <div class="device-bar"><span class="word">🍅 Farmly</span></div>
+        <div class="search">🔍&nbsp; Search tomatoes, eggs, honey&hellip;</div>
+        <div class="chips">
+          <span class="chip active">All</span>
+          <span class="chip">Vegetables</span>
+          <span class="chip">Fruit</span>
+          <span class="chip">Eggs &amp; dairy</span>
+          <span class="chip">Near me</span>
+        </div>
+        <div class="feed-grid">
+          <div class="card">
+            <div class="photo">🍅</div>
+            <div class="like">♡</div>
+            <div class="meta">
+              <div class="price">$3.50/lb</div>
+              <div class="name">Heirloom tomatoes, picked today</div>
+              <div class="farm">Rio Verde Farm &middot; 2.1 mi</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="photo">🥬</div>
+            <div class="like">♡</div>
+            <div class="meta">
+              <div class="price">$2.00/head</div>
+              <div class="name">Butter lettuce, no pesticides</div>
+              <div class="farm">Sunrise Acres &middot; 3.4 mi</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="photo">🥚</div>
+            <div class="like">♥</div>
+            <div class="meta">
+              <div class="price">$6.00/doz</div>
+              <div class="name">Pasture-raised eggs</div>
+              <div class="farm">Green Valley &middot; 1.6 mi</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="photo">🍓</div>
+            <div class="like">♡</div>
+            <div class="meta">
+              <div class="price">$4.25/pt</div>
+              <div class="name">Strawberries, last of the season</div>
+              <div class="farm">Rio Verde Farm &middot; 2.1 mi</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <p class="eyebrow" style="margin-top:2px;">What makes it &ldquo;discovery&rdquo;</p>
+        <ul class="callout-list">
+          <li><span class="dot"></span><span><b>Grid feed, newest first.</b> No algorithm to build for the demo &mdash; the visual density and freshness do the work.</span></li>
+          <li><span class="dot"></span><span><b>Like &amp; save</b> on every card, no account needed to browse.</span></li>
+          <li><span class="dot"></span><span><b>Search + category chips</b> for produce type and distance.</span></li>
+          <li><span class="dot"></span><span><b>Comments and following a farm</b> are in scope, but first to cut if time runs short.</span></li>
+          <li><span class="dot"></span><span>Everything a buyer sees comes from a farmer&rsquo;s Telegram post &mdash; nobody manually enters this.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Buyer side</p>
+    <h2>Tapping &ldquo;Buy&rdquo;</h2>
+    <div class="two-col">
+      <div class="modal">
+        <div class="ptitle">Heirloom tomatoes</div>
+        <div class="pfarm">Rio Verde Farm &middot; $3.50/lb</div>
+        <div class="row-field">
+          <label>Quantity (lb)</label>
+          <div class="stepper"><button>&minus;</button><span class="qty">2</span><button>&plus;</button></div>
+        </div>
+        <div class="row-field">
+          <label>Your name</label>
+          <div class="fake-input">Ricardo Manjarres</div>
+        </div>
+        <div class="row-field">
+          <label>Phone</label>
+          <div class="fake-input">(617) 555&ndash;0148</div>
+        </div>
+        <div class="buy-btn">Confirm &middot; $7.00</div>
+      </div>
+      <div>
+        <p class="eyebrow" style="margin-top:2px;">What happens on confirm</p>
+        <ul class="callout-list">
+          <li><span class="dot"></span><span>No payment charged &mdash; this is a <b>reservation commitment</b>, simulated for the demo.</span></li>
+          <li><span class="dot"></span><span>Order is written to the shared database, tied to that listing.</span></li>
+          <li><span class="dot"></span><span>Buyer never leaves the web page &mdash; no redirect to Telegram.</span></li>
+          <li><span class="dot"></span><span>Farmer is notified inside Telegram, sees it via <code>/pedidos</code>.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section style="margin-bottom:16px;">
+    <p class="eyebrow">Farmer side</p>
+    <h2>Everything else stays inside Telegram</h2>
+    <div class="two-col">
+      <div class="tg">
+        <div class="who">Farmly Bot &middot; Rio Verde Farm</div>
+        <div class="bubble out">[photo of tomatoes]<br>Tomates heirloom, $3.50/lb, tengo 40lb, se vencen el viernes</div>
+        <div class="bubble in">Got it &mdash; posted: <b>Heirloom tomatoes</b>, $3.50/lb, 40lb available, exp. Friday. Live on the feed now. 🍅</div>
+        <div class="bubble out"><code>/pedidos</code></div>
+        <div class="bubble in">1 new order: Ricardo M. wants 2lb heirloom tomatoes. Contact: (617) 555-0148.</div>
+        <div class="bubble out"><code>/mislistings</code></div>
+        <div class="bubble in">1. Heirloom tomatoes &mdash; 38lb left &middot; <i>reply DELETE 1 to remove</i></div>
+      </div>
+      <div>
+        <p class="eyebrow" style="margin-top:2px;">Why keep it here</p>
+        <ul class="callout-list">
+          <li><span class="dot"></span><span>Farmer never installs an app or learns a new interface &mdash; same as before.</span></li>
+          <li><span class="dot"></span><span>One data-entry path in, which keeps the build simpler.</span></li>
+          <li><span class="dot"></span><span><code>/mislistings</code> and <code>/pedidos</code> replace any need for a farmer login or dashboard.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <footer class="confirm">
+    <h3>Does this match what the team has in mind?</h3>
+    <p>If yes, next step is splitting the build into branches so everyone can go deep on one piece at once. Proposed split, once confirmed:</p>
+    <div class="branches">
+      <span class="branch">feed-web</span>
+      <span class="branch">telegram-bot</span>
+      <span class="branch">buy-flow</span>
+      <span class="branch">shared-schema</span>
+    </div>
+  </footer>
+
+</div>
