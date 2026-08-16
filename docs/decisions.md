@@ -111,3 +111,13 @@ A: Yes — this changes the buy flow from "confirm one item immediately" to a **
 - The buyer can keep adding or tap **Checkout**, which is where the phone/SMS login (see #14) and final confirmation happen.
 - The cart is scoped to **one seller at a time** — one checkout produces one `Order` with multiple `OrderLine`s, which already fits the shared `Order`/`OrderLine` schema in `docs/plan.md`. No backend schema change needed for this, just buyer-side flow.
 - This upsell threshold is the natural home for shipping **Mode 1** (free above a minimum) from decision #15 — the cart shows live progress toward that minimum.
+
+## 19. Share button on the group-shipping pool
+
+**Q: Once a buyer joins a product's group-shipping "pool," should they get a share button (e.g. WhatsApp) to invite others and help reach the threshold faster?**
+
+A: Yes. Added to the new **Order confirmed** screen (also fills the previously-missing "what happens right after checkout" gap):
+
+- Appears **only** when the order is part of an active group-shipping pool (Mode 3) that hasn't hit its threshold yet — not shown on every order.
+- Shows current pool progress (e.g. "You just joined the group — 32/50kg") plus a **"Share on WhatsApp"** button (pre-filled message + link) and a secondary generic share icon for the native OS share sheet (other apps).
+- Not shown on Mode 1 or Mode 2 orders, or once a pool has already reached its threshold (at that point the messaging shifts to "free shipping secured," not a call to invite more people).
