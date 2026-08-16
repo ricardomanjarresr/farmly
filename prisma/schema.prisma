@@ -1,0 +1,57 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Farm {
+  id              String    @id @default(cuid())
+  name            String
+  town            String
+  telegramChatId  String    @unique
+  createdAt       DateTime  @default(now())
+  listings        Listing[]
+}
+
+model Listing {
+  id            String   @id @default(cuid())
+  farm          Farm     @relation(fields: [farmId], references: [id])
+  farmId        String
+  item          String
+  category      String
+  price         Float
+  unit          String
+  qtyAvailable  Float
+  expiresAt     DateTime?
+  photoUrl      String?
+  likeCount     Int      @default(0)
+  status        String   @default("active")
+  createdAt     DateTime @default(now())
+  orders        Order[]
+}
+
+model Order {
+  id          String   @id @default(cuid())
+  listing     Listing  @relation(fields: [listingId], references: [id])
+  listingId   String
+  buyerName   String
+  buyerPhone  String
+  qty         Float
+  status      String   @default("pending")
+  createdAt   DateTime @default(now())
+}
+
+model ReferencePrice {
+  id      String @id @default(cuid())
+  item    String
+  source  String
+  price   Float
+}
