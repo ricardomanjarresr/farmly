@@ -42,6 +42,18 @@ Both branches are pushed and ready to build on. Since the schema lives on Walmy'
 
 A listing's price now auto-discounts as `expiresAt` approaches, reusing the field already in the schema — no new data needed. Schedule: 15% off at 2 days to expiry, 30% off at 1 day or today. Expired listings are flagged and excluded from feed queries rather than shown at a discount. Implemented as a shared, pure function (`src/lib/pricing.ts`, `getEffectivePrice(basePrice, expiresAt)`) so both branches compute it the same way: the feed shows the discounted price plus a badge, the buy flow charges the effective (discounted) price, and `feed-web`'s listing query should filter out anything past its `expiresAt`.
 
+### Linking with Ricardo's shipping/cart/pooling mockup (docs/decisions.md #13-20)
+
+Ricardo's `feature/web-buyer-experience` branch added a real per-seller cart, three farmer shipping modes (free-above-minimum, flat-fee-with-radius, pooled/gamified), and Telegram Login for buyers. Schema on `feature/telegram-farmer-backend` now supports all of it (commit `d51c583`):
+
+- `Farm.shippingMode` + mode-specific config fields (`freeShippingMinAmount`, `flatFeeAmount`/`flatFeeRadiusKm`, `poolThresholdQty`/`poolDeadlineHours`), plus `Farm.lat`/`lng`.
+- `ShippingPool` (one per listing): `targetQty`, `currentQty`, `deadline`, `status` (open/reached/expired).
+- `Order` split into `Order` + `OrderLine` — one checkout (one seller's cart) can now hold multiple listings, matching decision #18's cart+upsell flow with no further schema changes needed.
+- `Order.buyerLat`/`buyerLng` for the 30km pool/radius check, `Order.buyerTelegramChatId` for once Telegram Login (decision #20) is wired up.
+- Seed data includes one listing pre-set to a "pool reached" state (52/50), per decision #16's note that real deadlines are too slow to demo live.
+
+**Bot token is the shared blocker (decision #20) — already resolved on this side.** The token's live and working in `/sell`/`/mislistings`/`/pedidos`. There's one bot for the whole app; Ricardo needs the same token for the Login Widget, not a separate bot. **Do not put the token in any repo file — this repo is public.** Share it with Ricardo directly (text/Slack/DM), the same way Walmy shared it here.
+
 ### Still blocked on
 
 - Telegram bot token (@BotFather) — needed for `telegram-bot` and to test `buy-flow`'s farmer-notification path end-to-end.
