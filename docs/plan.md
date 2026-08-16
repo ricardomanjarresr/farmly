@@ -54,6 +54,14 @@ Ricardo's `feature/web-buyer-experience` branch added a real per-seller cart, th
 
 **Bot token is the shared blocker (decision #20) — already resolved on this side.** The token's live and working in `/sell`/`/mislistings`/`/pedidos`. There's one bot for the whole app; Ricardo needs the same token for the Login Widget, not a separate bot. **Do not put the token in any repo file — this repo is public.** Share it with Ricardo directly (text/Slack/DM), the same way Walmy shared it here.
 
+### Deployed (2026-08-16, evening)
+
+- **Live URL:** https://farmly-liard.vercel.app
+- **Vercel:** moved from a personal-scope project to a shared team, `farmly-sundai` — Ricardo invited as a member (ricardo.majarresr@gmail.com). One shared project, avoids two people accidentally creating separate deployments.
+- **Database:** hosted Prisma Postgres, free tier, **24h TTL — expires 2026-08-17 unless claimed**. Claim URL (makes it permanent) is in Walmy's terminal history from provisioning; claim it before the 24h window closes if the project continues past today.
+- **Shared dev setup:** Ricardo's local `.env` should point at the *same* `DATABASE_URL` as production (not his own local SQLite) so both of you read/write the same live data instead of diverging.
+- **Telegram webhook not yet pointed at the deployed URL** — intentionally left on local long-polling for dev. Only one delivery mode (polling or webhook) can be active at a time, so this is a deliberate later step, done once ready to demo live rather than automatically.
+
 ### Still blocked on
 
 - Telegram bot token (@BotFather) — needed for `telegram-bot` and to test `buy-flow`'s farmer-notification path end-to-end.
