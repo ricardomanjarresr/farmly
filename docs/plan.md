@@ -38,6 +38,10 @@ Adapted from Ricardo's 4-way proposal into a 2-person split, both branching from
 
 Both branches are pushed and ready to build on. Since the schema lives on Walmy's branch, Ricardo's branch will need it merged in (or the schema shape agreed on up front) before `feed-web`/`buy-flow` can read real data — worth syncing on the `Listing`/`Order`/`ReferencePrice` shape early rather than at merge time.
 
+### Markdown pricing near expiry (new, added while building)
+
+A listing's price now auto-discounts as `expiresAt` approaches, reusing the field already in the schema — no new data needed. Schedule: 15% off at 2 days to expiry, 30% off at 1 day or today. Expired listings are flagged and excluded from feed queries rather than shown at a discount. Implemented as a shared, pure function (`src/lib/pricing.ts`, `getEffectivePrice(basePrice, expiresAt)`) so both branches compute it the same way: the feed shows the discounted price plus a badge, the buy flow charges the effective (discounted) price, and `feed-web`'s listing query should filter out anything past its `expiresAt`.
+
 ### Still blocked on
 
 - Telegram bot token (@BotFather) — needed for `telegram-bot` and to test `buy-flow`'s farmer-notification path end-to-end.
