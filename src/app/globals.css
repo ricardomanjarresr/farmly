@@ -1,26 +1,55 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #faf7f1;
+  --surface: #ffffff;
+  --surface-sunk: #f1ece0;
+  --ink: #211f1a;
+  --ink-soft: #5c574c;
+  --ink-faint: #8a8371;
+  --line: #e3dccb;
+  --green-700: #2f5d3a;
+  --green-600: #3f7d4f;
+  --green-100: #e3ede2;
+  --coral-600: #d6532f;
+  --coral-100: #fbe4da;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-sunk: var(--surface-sunk);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-faint: var(--ink-faint);
+  --color-line: var(--line);
+  --color-green-700: var(--green-700);
+  --color-green-600: var(--green-600);
+  --color-green-100: var(--green-100);
+  --color-coral-600: var(--coral-600);
+  --color-coral-100: var(--coral-100);
+  --font-serif: Georgia, "Iowan Old Style", "Palatino Linotype", serif;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --bg: #15130f;
+    --surface: #211e18;
+    --surface-sunk: #292520;
+    --ink: #f3efe4;
+    --ink-soft: #b8b0a0;
+    --ink-faint: #8f886f;
+    --line: #3a352b;
+    --green-700: #8fc79e;
+    --green-600: #6fae7f;
+    --green-100: #26332a;
+    --coral-600: #ef8a63;
+    --coral-100: #3a281f;
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
