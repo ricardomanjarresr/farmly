@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>El Farmer — Flywheel</title>
+<style>
+  :root{
+    --green-900:#1b4332;
+    --green-700:#2d6a4f;
+    --green-500:#40916c;
+    --green-100:#d8f3dc;
+    --blue-600:#2563eb;
+    --blue-100:#dbeafe;
+    --gold-600:#b45309;
+    --gold-100:#fef3c7;
+    --ink:#1f2937;
+    --muted:#6b7280;
+    --bg:#f7f8fa;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+  }
+  .wrap{max-width:960px;margin:0 auto;padding:32px 20px 60px;text-align:center;}
+  h1{font-size:24px;margin:0 0 4px;color:var(--green-900);}
+  .subtitle{color:var(--muted);font-size:14px;margin:0 0 4px;}
+  .legend{color:var(--blue-600);font-size:13px;font-weight:600;margin:8px 0 20px;}
+  svg{max-width:100%;height:auto;}
+  footer{color:var(--muted);font-size:12px;margin-top:20px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>El Farmer — The Flywheel</h1>
+  <p class="subtitle">One loop, entirely inside chat: post → structure → ask → match/negotiate/aggregate → close → grow</p>
+  <p class="legend">💬 Every step happens on Telegram / WhatsApp — no app to install</p>
+
+  <svg viewBox="0 0 900 820" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#2d6a4f"/>
+      </marker>
+      <marker id="arrowGold" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#b45309"/>
+      </marker>
+    </defs>
+
+    <!-- guide ring (decorative) -->
+    <circle cx="440" cy="320" r="210" fill="none" stroke="#e5e7eb" stroke-width="1" stroke-dasharray="2 6"/>
+
+    <!-- flywheel connectors -->
+    <path d="M440,110 Q557.5,116.5 622,215" fill="none" stroke="#2d6a4f" stroke-width="3" marker-end="url(#arrow)"/>
+    <path d="M622,215 Q675,320 622,425" fill="none" stroke="#2d6a4f" stroke-width="3" marker-end="url(#arrow)"/>
+    <path d="M622,425 Q557.5,523.5 440,530" fill="none" stroke="#2d6a4f" stroke-width="3" marker-end="url(#arrow)"/>
+    <path d="M440,530 Q322.5,523.5 258,425" fill="none" stroke="#2d6a4f" stroke-width="3" marker-end="url(#arrow)"/>
+    <path d="M258,425 Q205,320 258,215" fill="none" stroke="#2d6a4f" stroke-width="3" marker-end="url(#arrow)"/>
+    <path d="M258,215 Q322.5,116.5 440,110" fill="none" stroke="#2d6a4f" stroke-width="3" marker-end="url(#arrow)"/>
+
+    <!-- center -->
+    <circle cx="440" cy="320" r="86" fill="#ffffff" stroke="#40916c" stroke-width="2"/>
+    <text x="440" y="315" text-anchor="middle" font-size="20" font-weight="700" fill="#1b4332">EL FARMER</text>
+    <text x="440" y="336" text-anchor="middle" font-size="11.5" fill="#6b7280">AI-agent marketplace,</text>
+    <text x="440" y="350" text-anchor="middle" font-size="11.5" fill="#6b7280">powered by chat</text>
+
+    <!-- Node 1: top -->
+    <circle cx="440" cy="110" r="40" fill="#d8f3dc" stroke="#2d6a4f" stroke-width="2"/>
+    <text x="440" y="117" text-anchor="middle" font-size="20" font-weight="700" fill="#1b4332">1</text>
+    <circle cx="468" cy="82" r="15" fill="#ffffff" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="468" y="87" text-anchor="middle" font-size="14">💬</text>
+    <text x="440" y="46" text-anchor="middle" font-size="14" font-weight="700" fill="#1b4332">Farmer posts via chat</text>
+    <text x="440" y="64" text-anchor="middle" font-size="11.5" fill="#6b7280">photo · price · qty · expiration</text>
+
+    <!-- Node 2: upper right -->
+    <circle cx="622" cy="215" r="40" fill="#ffffff" stroke="#40916c" stroke-width="2"/>
+    <text x="622" y="222" text-anchor="middle" font-size="20" font-weight="700" fill="#1b4332">2</text>
+    <text x="672" y="185" text-anchor="start" font-size="14" font-weight="700" fill="#1b4332">AI builds the listing</text>
+    <text x="672" y="203" text-anchor="start" font-size="11.5" fill="#6b7280">structured catalog entry</text>
+
+    <!-- Node 3: lower right -->
+    <circle cx="622" cy="425" r="40" fill="#d8f3dc" stroke="#2d6a4f" stroke-width="2"/>
+    <text x="622" y="432" text-anchor="middle" font-size="20" font-weight="700" fill="#1b4332">3</text>
+    <circle cx="650" cy="453" r="15" fill="#ffffff" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="650" y="458" text-anchor="middle" font-size="14">💬</text>
+    <text x="672" y="410" text-anchor="start" font-size="14" font-weight="700" fill="#1b4332">Buyer asks via chat</text>
+    <text x="672" y="428" text-anchor="start" font-size="11.5" fill="#6b7280">natural language request</text>
+    <rect x="672" y="440" width="42" height="20" rx="10" fill="#dbeafe"/>
+    <text x="693" y="454" text-anchor="middle" font-size="10.5" font-weight="700" fill="#1e3a8a">B2C</text>
+    <rect x="718" y="440" width="42" height="20" rx="10" fill="#dbeafe"/>
+    <text x="739" y="454" text-anchor="middle" font-size="10.5" font-weight="700" fill="#1e3a8a">B2B</text>
+
+    <!-- Node 4: bottom -->
+    <circle cx="440" cy="530" r="40" fill="#ffffff" stroke="#40916c" stroke-width="2"/>
+    <text x="440" y="537" text-anchor="middle" font-size="20" font-weight="700" fill="#1b4332">4</text>
+    <text x="440" y="600" text-anchor="middle" font-size="14" font-weight="700" fill="#1b4332">Agent matches, negotiates</text>
+    <text x="440" y="618" text-anchor="middle" font-size="14" font-weight="700" fill="#1b4332">&amp; aggregates</text>
+    <rect x="330" y="628" width="90" height="22" rx="11" fill="#d8f3dc"/>
+    <text x="375" y="643" text-anchor="middle" font-size="11" font-weight="700" fill="#1b4332">FREE: match</text>
+    <rect x="428" y="628" width="140" height="22" rx="11" fill="#fef3c7"/>
+    <text x="498" y="643" text-anchor="middle" font-size="11" font-weight="700" fill="#78350f">PREMIUM: negotiate + pool</text>
+
+    <!-- Node 5: lower left -->
+    <circle cx="258" cy="425" r="40" fill="#ffffff" stroke="#40916c" stroke-width="2"/>
+    <text x="258" y="432" text-anchor="middle" font-size="20" font-weight="700" fill="#1b4332">5</text>
+    <text x="208" y="410" text-anchor="end" font-size="14" font-weight="700" fill="#1b4332">Deal closes in chat</text>
+    <text x="208" y="428" text-anchor="end" font-size="11.5" fill="#6b7280">both sides confirm</text>
+
+    <!-- Node 6: upper left -->
+    <circle cx="258" cy="215" r="40" fill="#ffffff" stroke="#40916c" stroke-width="2"/>
+    <text x="258" y="222" text-anchor="middle" font-size="20" font-weight="700" fill="#1b4332">6</text>
+    <text x="208" y="185" text-anchor="end" font-size="14" font-weight="700" fill="#1b4332">Trust, data &amp; new users</text>
+    <text x="208" y="203" text-anchor="end" font-size="11.5" fill="#6b7280">flywheel spins faster</text>
+
+    <!-- future branch -->
+    <path d="M258,215 C 40,300 40,600 150,675" fill="none" stroke="#b45309" stroke-width="2.5" stroke-dasharray="6 5" marker-end="url(#arrowGold)"/>
+    <rect x="15" y="680" width="290" height="100" rx="14" fill="#fef3c7" stroke="#b45309" stroke-width="1.5"/>
+    <text x="160" y="715" text-anchor="middle" font-size="14" font-weight="700" fill="#78350f">FUTURE: Credit &amp; Insurance</text>
+    <text x="160" y="738" text-anchor="middle" font-size="11.5" fill="#78350f">underwritten on the flywheel's</text>
+    <text x="160" y="754" text-anchor="middle" font-size="11.5" fill="#78350f">own transaction data</text>
+  </svg>
+
+  <footer>El Farmer — one-page flywheel for co-founder conversations</footer>
+</div>
+</body>
+</html>
