@@ -16,6 +16,7 @@ export function createBot() {
     await ctx.reply(
       "Welcome to Farmly.\n\n" +
         "/setfarm Name, Town - set up your farm (do this first)\n" +
+        "/setshipping - set your shipping mode (do this once, before selling)\n" +
         "/sell item, price, unit, qty, expires - post a listing\n" +
         "Or just send a photo - add a caption with price/qty/expiry for accuracy, or send it plain and I'll guess\n" +
         "/mislistings - see your active listings\n" +
@@ -41,6 +42,76 @@ export function createBot() {
       create: { name, town, telegramChatId: chatId },
     });
     await ctx.reply(`Saved: ${name}, ${town}. Now try /sell to post a listing.`);
+  });
+
+  bot.command("setshipping", async (ctx) => {
+    const chatId = ctx.chat.id.toString();
+    const farm = await prisma.farm.findUnique({ where: { telegramChatId: chatId } });
+    if (!farm) {
+      await ctx.reply("Set up your farm first: /setfarm Name, Town");
+      return;
+    }
+    const text = ctx.match?.toString().trim();
+    if (!text) {
+      await ctx.reply(
+        "Send it as one of:\n" +
+          "/setshipping free_above_min, 25\n" +
+          "  (free shipping once an order totals $25+, otherwise not allowed)\n" +
+          "/setshipping flat_fee, 4.50, 30\n" +
+          "  ($4.50 flat fee, delivers within 30km)\n" +
+          "/setshipping pooled, 50, 48\n" +
+          "  (free once 50 units ordered nearby within 48 hours of the first order)",
+      );
+      return;
+    }
+    const parts = text.split(",").map((p) => p.trim());
+    const mode = parts[0]?.toLowerCase();
+
+    if (mode === "free_above_min") {
+      const min = Number(parts[1]);
+      if (!parts[1] || Number.isNaN(min) || min <= 0) {
+        await ctx.reply("Send it as: /setshipping free_above_min, 25");
+        return;
+      }
+      await prisma.farm.update({
+        where: { id: farm.id },
+        data: { shippingMode: "free_above_min", freeShippingMinAmount: min, flatFeeAmount: null, flatFeeRadiusKm: null, poolThresholdQty: null, poolDeadlineHours: null },
+      });
+      await ctx.reply(`Shipping set: free above $${min}.`);
+      return;
+    }
+
+    if (mode === "flat_fee") {
+      const fee = Number(parts[1]);
+      const radius = Number(parts[2]);
+      if (!parts[1] || !parts[2] || Number.isNaN(fee) || fee <= 0 || Number.isNaN(radius) || radius <= 0) {
+        await ctx.reply("Send it as: /setshipping flat_fee, 4.50, 30");
+        return;
+      }
+      await prisma.farm.update({
+        where: { id: farm.id },
+        data: { shippingMode: "flat_fee", flatFeeAmount: fee, flatFeeRadiusKm: radius, freeShippingMinAmount: null, poolThresholdQty: null, poolDeadlineHours: null },
+      });
+      await ctx.reply(`Shipping set: $${fee} flat fee, within ${radius}km.`);
+      return;
+    }
+
+    if (mode === "pooled") {
+      const targetQty = Number(parts[1]);
+      const deadlineHours = Number(parts[2]);
+      if (!parts[1] || !parts[2] || Number.isNaN(targetQty) || targetQty <= 0 || Number.isNaN(deadlineHours) || deadlineHours <= 0) {
+        await ctx.reply("Send it as: /setshipping pooled, 50, 48");
+        return;
+      }
+      await prisma.farm.update({
+        where: { id: farm.id },
+        data: { shippingMode: "pooled", poolThresholdQty: targetQty, poolDeadlineHours: Math.round(deadlineHours), freeShippingMinAmount: null, flatFeeAmount: null, flatFeeRadiusKm: null },
+      });
+      await ctx.reply(`Shipping set: pooled - free once ${targetQty} units ordered nearby within ${deadlineHours}h of the first order.`);
+      return;
+    }
+
+    await ctx.reply("Mode must be one of: free_above_min, flat_fee, pooled. Send /setshipping with no text to see examples.");
   });
 
   bot.command("sell", async (ctx) => {
