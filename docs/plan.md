@@ -24,7 +24,109 @@ Vision A is realistic for one day but is a much smaller, less flashy demo.
 
 **A middle path exists:** build Vision A's real, working core (post → reserve → pickup sheet) as the reliable spine, and layer in *one* piece of Vision B's "wow" factor — most likely the photo-to-listing AI step, since that's the single most visually impressive and self-contained piece — without promising live agent-to-agent negotiation or multi-farmer aggregation (those can be "mocked"/simulated for the demo narrative rather than fully built).
 
-## Recommended plan (synthesizing both docs)
+## Pivot: building for Version B (Walmy's decision)
+
+Walmy has decided to build toward the **full "El Farmer" vision (Version B)**, not the narrower wedge. The analysis above stays as context for *why* that's the harder path — the sections below replace the earlier "middle path" recommendation with a plan for actually building all four agent roles from Ricardo's README in one day.
+
+### What "Version B" means to build
+
+1. **Listing Extraction Agent** — farmer sends a photo and/or text; AI extracts product, price, quantity, expiration, delivery method into a structured listing. (Previously the optional "wow moment" — now a required feature.)
+2. **Matching Agent** — buyer describes what they want in natural language ("necesito 2kg de tomate para mañana"); agent searches the live catalog and returns matches at the farmer's listed price. This is the **Free tier** behavior.
+3. **Negotiation Agent (Premium)** — for farmers who opt into Premium, buyer offers get countered within a floor price the farmer set once. Reserving becomes "reserve at a negotiated price" instead of "reserve at listed price."
+4. **Aggregation Agent (Premium)** — when a B2B buyer needs more of a product than any single farmer has, the agent stitches together listings from multiple farmers (same product, compatible pickup windows) into one consolidated order with a single confirmation.
+5. **Freemium framing** — a farmer's listing is tagged Free or Premium; Premium unlocks #3 and #4 for that farmer. No real billing — this is a flag on the listing for the demo narrative, consistent with "mock payment entirely."
+
+### Decisions from planning session 2026-08-16 (evening) — "Farmly" full spec
+
+Name is confirmed: **Farmly**. Walmy laid out the full three-sided model: Farmer (producer, also a paying customer), Platform, Buyer (both B2C and B2B — not choosing one).
+
+**Farmer tiers (confirmed):**
+- **Free** — listed in the marketplace, can sell, no boosted visibility.
+- **Premium** — "Agent Max" (full Negotiation + Aggregation Agent support) + "Recommended Seller" (boosted placement — premium listings surface first in match/search results, similar to sponsored placement on Amazon/MercadoLibre).
+
+**Farmer listing flow (confirmed):** picture, voice, or text → name, expiration, minimum price (floor price), quantity → creates a listing in the backend. Also want a **companion website**, browsable "kind of like Amazon or MercadoLibre" — not just the pickup-sheet fallback previously planned, but a real browsable catalog. Telegram stays the primary interface (confirmed reason: easier access than WhatsApp, no business-account approval wait); the website is the secondary surface over the same backend/data.
+
+**Buyer request flow (confirmed fields):** product, quantity, a price threshold, location. System searches/matches against the listing database on those fields.
+
+**Payment (new — changes prior scope):** wants a real payment confirmation step, Stripe if feasible, "or simpler than that if possible." This is a change from the earlier plan's "mock payment entirely" — see recommendation below.
+
+**Nice-to-have #4 (not core scope):** price-comparison feature — show the Farmly price next to Whole Foods/Amazon/Walmart for the same organic product, so buyers can see the savings. Real-time competitor pricing isn't feasible to pull live in a day-build; if built at all, this would use a small static/mocked comparison table for a few demo products, purely for the pitch narrative.
+
+**Fulfillment framing (clarified, not changed in scope):** the pitch value prop is "buyers don't have to go to the Sunday market or Walmart, they get it when they need it" and "farmers don't have to show up to Sunday market every time." This is framing, not a commitment to build delivery logistics — the platform still doesn't run delivery. The bot/website can say "pick up, or arrange delivery directly with the farmer," keeping the actual engineering scope to matching + reservation, consistent with the research doc's warning that owning logistics is what killed TaniHub/Otipy.
+
+**My recommendation on B2C vs. B2B (asked for directly):** build both — they're both already in the data model (`buyer_type` on `Order`) — but **lead the demo with the B2B/Aggregation Agent flow** (a business buyer needs more of a product than one farm has, the agent consolidates across farms) as the headline "wow" moment, with the individual/B2C `/browse` flow as the second, "also works for a household" beat. Reasoning: B2B aggregation is the more differentiated, more Frubana-like value prop and the harder problem to solve, so it's the stronger demo story; B2C browsing is simpler and serves as a good warm-up / breadth-of-market signal before the bigger moment. Don't cut either — sequence them.
+
+**Open questions — resolved:**
+1. **Buyer's "minimum price" = a floor filter.** The buyer is screening out listings priced suspiciously/undesirably cheap, not capping their budget. Matching logic: exclude listings priced *below* the buyer's stated threshold (opposite of a max-budget cap).
+2. **Payment = simulated confirm for today's demo.** "Confirm" is a commitment step with no real charge — no Stripe account/webhook work needed today. Real Stripe test-mode Checkout stays a stretch add-on only if time allows.
+3. **Price-comparison feature = in scope, with mocked data.** Small static comparison table (Farmly price vs. Whole Foods/Amazon/Walmart) for a couple of demo products, shown at confirm time or on the listing — purely for the pitch narrative, not live-scraped.
+
+### Decisions from planning session 2026-08-16 (afternoon)
+
+- **AI features deferred until an Anthropic API key exists.** No photo→listing extraction yet, no LLM-narrated chat replies yet. Everything else builds now using plain typed input and plain templated bot text. This is a bigger simplification than it sounds: the Negotiation and Aggregation Agents were already planned as deterministic math (see option (b) below) — the only thing AI was adding on top was making the chat text *sound* like an agent talking. Without a key, the bot just states the outcome directly ("Counter-offer: $X — accept? [yes/no]" instead of an LLM-phrased negotiation message). Fully functional, just plainer language. The photo-extraction feature (farmer sends a photo, AI reads it) is the one piece that has no non-AI substitute — it's simply on hold until a key is available, and `/sell` works as a typed-only flow until then.
+- **Telegram bot token**: not ready yet, deferred. Bot skeleton/webhook code can still be written and unit-tested, but nothing can be tested end-to-end inside actual Telegram until the token exists.
+- **Demo data (farms/products)**: not decided yet, deferred. Schema and seed-script structure can be built now; actual farm names/products get decided later.
+- **Net effect on build order**: steps that don't depend on the API key or the bot token (Prisma schema, negotiation math, aggregation math, pickup sheet logic) can proceed now. Steps that need the bot token (anything tested live in Telegram) and the API key (photo extraction, LLM narration) are blocked until Walmy provides them.
+
+### The implementation decision that determines whether this is finishable in a day
+
+"AI agent negotiates" and "AI agent aggregates" can mean two very different builds:
+
+- **(a) True LLM-orchestrated agents** — an LLM actually reasons through the negotiation or aggregation live (tool-calling, multi-step reasoning). Closest to the literal pitch, but high risk: harder to make reliably correct, harder to debug, more that can go wrong live in front of judges.
+- **(b) Deterministic logic with an AI-narrated voice (recommended)** — the actual counter-offer math (bounded by the floor price) and the aggregation matching (greedy sum across listings until the requested quantity is met) are plain, predictable code — but the bot narrates the outcome via an LLM call, so the chat transcript still *reads* like an agent negotiating/aggregating. Safer, faster, and leaves real build time for the Listing Extraction Agent — the hardest and most novel piece, and the one most worth protecting time for.
+
+Going with **(b)** for the day-build. Full agent orchestration (a) is a legitimate stretch goal only if 1–4 above are working solidly with time to spare.
+
+### B2B buyer segment (needed for Aggregation to mean anything)
+
+Aggregation only demonstrates something if a buyer asks for more than one farmer can supply. Adding: a buyer-type distinction (individual vs. business) captured on first contact with the bot, and a `/order` flow (separate from casual `/browse`) for a business buyer to request a quantity that may span multiple farms.
+
+### Updated data model (Prisma)
+
+- `Farm` — id, name, town, pickup_location, pickup_time
+- `Listing` — id, farm_id, item, unit, price, qty_available, week_of, photo_url, tier (free/premium), floor_price (nullable, premium only), expiration_date
+- `Order` — id, buyer_name, buyer_type (individual/business), status (pending/confirmed — "confirmed" is the simulated-payment state, no real charge), created_at
+- `OrderLine` — id, order_id, listing_id, qty_reserved, price_agreed
+- `ReferencePrice` (new, for the price-comparison nice-to-have) — id, item, source (e.g. "Whole Foods"/"Amazon"/"Walmart"), price — a small hand-entered/mocked table, not live-scraped, joined against `Listing.item` at demo time to show the savings.
+
+(`Order`/`OrderLine` replaces the earlier single `Order` table — a business buyer's aggregated order can now span multiple listings across different farms, so one `Order` needs many `OrderLine`s.)
+
+**Buyer's price threshold is a floor filter**, not a max budget: when matching, exclude listings priced *below* what the buyer stated (screens out suspiciously cheap listings), not above it.
+
+### Updated bot flows
+
+1. `/sell` — farmer flow: item/unit/price/qty/pickup info (with optional photo → Listing Extraction Agent), plus a new "free or premium?" step, and a floor price if premium.
+2. `/browse` — individual buyer flow: Matching Agent, direct match at listed price (free-tier behavior).
+3. `/order` — business buyer flow: buyer states product + quantity in natural language; if one farmer's listing covers it, confirm directly; if not, and enough listings together cover it, the Aggregation Agent proposes a consolidated order across farms.
+4. Negotiation — inside `/browse` or `/order`, if the matched listing is premium, the bot invites a counter-offer and returns a counter bounded by the farmer's floor price.
+5. Confirm — before finalizing, the bot shows a simulated "confirm to reserve" step (no real charge) and, if a `ReferencePrice` exists for that item, a one-line price comparison ("Farmly: $3/lb · Whole Foods: $5.50/lb").
+6. `/mysheet` — farmer pickup sheet, now built from `OrderLine`s so it correctly reflects both direct and aggregated orders.
+
+### Still explicitly out of scope
+
+- Real payment or delivery/logistics — "reserve"/"confirm" is a commitment, not a paid transaction.
+- Reputation/credit engine — Ricardo's own doc names this as a future business line, not a hackathon build.
+- Real subscription billing for Premium — a flag on a listing, not a live payment flow.
+- Full LLM-orchestrated agent reasoning (option (a) above) — deferred unless there's time left after the core build works.
+
+### Build order (revised — hardest/most novel piece first, while the day is fresh)
+
+1. Prisma schema (`Farm`, `Listing`, `Order`, `OrderLine`) — SQLite locally.
+2. Telegram bot skeleton + `/sell` (text-only first).
+3. Photo → Listing Extraction Agent — build and test this early; it's the biggest risk and the true novelty, not something to leave for the end.
+4. `/browse` — Matching Agent, free-tier direct match.
+5. Negotiation logic (deterministic + LLM narration) for premium listings.
+6. `/order` + Aggregation Agent (deterministic greedy match + LLM narration).
+7. `/mysheet` pickup sheet across `Order`/`OrderLine`, plus optional companion web page.
+8. Commit, push (only once Walmy confirms — nothing pushed automatically).
+9. Provision hosted Postgres, deploy to Vercel, wire up the Telegram webhook, smoke-test live.
+
+### Verification (expanded)
+
+- Local: farmer posts both a free and a premium listing (with photo); an individual buyer browses and reserves at listed price; an individual buyer negotiates a premium listing toward (but not below) the floor price; a business buyer requests more than any single farmer has and confirms an order aggregated across 2+ farms; the pickup sheet reflects everything correctly; over-reserving is still rejected.
+- Deployed: repeat the same walkthrough against the live bot before calling it demo-ready.
+
+## Earlier "middle path" recommendation (superseded by the Version B pivot above, kept for context)
 
 **The call:** build Vision A's real, working core as the reliable spine, and layer in exactly **one** piece of Vision B's flash — photo → AI-extracted listing — since that's the single most self-contained, demoable AI moment and it directly matches the "novel moment" Ricardo's own README calls out as the hackathon-scope target. Everything else in Vision B (Negotiation Agent, Aggregation Agent, Telegram/WhatsApp bot layer, payment, logistics) gets explicitly deferred — and this isn't a compromise invented here, it's what Ricardo's README *itself* recommends under "Hackathon build scope": mock payment/logistics entirely, treat the Negotiation Agent as a stretch goal, and focus the two demo-worthy moments on listing extraction and (optionally) aggregation. We're taking that guidance and cutting it down further to what's realistic in one day with no prior build experience: just the extraction moment, not aggregation.
 
