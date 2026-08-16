@@ -180,6 +180,7 @@
   .share-row{display:flex;gap:8px;}
   .whatsapp-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;background:#25D366;color:#fff;border:none;border-radius:9px;padding:9px;font-size:11.5px;font-weight:700;}
   .share-btn{flex:none;width:38px;display:flex;align-items:center;justify-content:center;background:var(--surface);border:1px solid var(--line);border-radius:9px;font-size:14px;color:var(--ink);}
+  .telegram-btn{display:flex;align-items:center;justify-content:center;gap:8px;background:#229ED9;color:#fff;border:none;border-radius:10px;padding:12px;font-size:13px;font-weight:700;width:100%;}
 </style>
 
 <div class="top">
@@ -333,21 +334,21 @@
           <div class="sheet-grab"></div>
           <h3>Confirm your order</h3>
           <div class="sub">2 items &middot; Rio Verde Farm &middot; $7.00</div>
-          <div class="field-label">Your name</div>
-          <div class="fake-input">Ricardo Manjarres</div>
-          <div class="field-label">Your phone</div>
-          <div class="fake-input">(617) 555&ndash;0148</div>
-          <div class="or-line">📱 6-digit code sent by SMS</div>
-          <div style="display:flex;gap:6px;margin-bottom:14px;">
-            <div class="otp-box">4</div><div class="otp-box">8</div><div class="otp-box">2</div><div class="otp-box">1</div><div class="otp-box">9</div><div class="otp-box">0</div>
+          <p style="font-size:11px;color:var(--ink-soft);line-height:1.5;margin:4px 0 14px;">Log in to confirm &mdash; we'll message you on Telegram when your order updates.</p>
+          <button class="telegram-btn">✈️ Log in with Telegram</button>
+          <div class="or-line">taps through to Telegram, back in one step</div>
+          <div style="display:flex;gap:10px;align-items:center;background:var(--surface-sunk);border-radius:10px;padding:10px 12px;margin-bottom:14px;">
+            <div class="farm-avatar" style="background:var(--surface);">🙂</div>
+            <div><div style="font-size:12px;font-weight:650;color:var(--ink);">Ricardo Manjarres</div><div style="font-size:10px;color:var(--ink-faint);">@ricardom &middot; logged in</div></div>
           </div>
           <button class="confirm-btn">Confirm order &middot; $7.00</button>
         </div>
       </div>
     </div>
     <div class="callouts">
-      <div class="callout"><span class="num">7</span><span>Phone + SMS code login &mdash; but <b>simulated</b>: no external provider, code auto-fills. Zero cost, zero risk today.</span></div>
-      <div class="callout"><span class="num">8</span><span>That name/phone is what later identifies &ldquo;Saved&rdquo; and &ldquo;Orders.&rdquo;</span></div>
+      <div class="callout"><span class="num">7</span><span><b>Real</b> Telegram Login Widget &mdash; not simulated. No SMS, no OTP, no external paid provider.</span></div>
+      <div class="callout"><span class="num">8</span><span>The login also &ldquo;starts&rdquo; the buyer's chat with the Farmly bot, so it can message them later &mdash; that's what powers order/pool notifications.</span></div>
+      <div class="callout"><span class="num">8b</span><span>Needs the Telegram bot token to actually work &mdash; same blocker Walmy's branch is waiting on.</span></div>
     </div>
   </div>
 
@@ -364,6 +365,7 @@
             <div class="check-circle">✓</div>
             <div class="confirm-title">Order confirmed!</div>
             <div class="confirm-sub">2 items &middot; Rio Verde Farm &middot; $7.00</div>
+            <p style="text-align:center;font-size:10.5px;color:var(--ink-faint);margin:-6px 0 16px;">✈️ We'll message you on Telegram with updates</p>
             <div class="pool-card">
               <div class="h">🚚 You just joined the group &mdash; 32/50kg</div>
               <div class="p">Rio Verde Farm ships free once the group hits 50kg, by Friday. Share to help get there faster:</div>

@@ -74,11 +74,13 @@ The team asked for a visual draft/mockup of the full flow first, to confirm as a
 
 **Feedback: all feed cards must be the same size** — the RED-style masonry (variable card heights) was replaced with a uniform grid (fixed-height photo, fixed-height card) in `docs/mockup_flows.html`.
 
-## 14. Login method — phone + SMS OTP (simulated)
+## 14. Login method — phone + SMS OTP (simulated) — SUPERSEDED by #20
 
 **Q: Is phone number + SMS verification code feasible, and is it free for the low volume of a hackathon demo?**
 
 A: Yes, several providers work for free at this volume (Firebase test numbers, Twilio/Vonage trial credit), but all add real build time and external accounts. For today: **simulated** — buyer enters name + phone, a 6-digit code is shown/auto-filled, no real SMS provider integrated. Replaces the earlier "simulated Google login" decision (#7 revision). Real SMS (Firebase or Twilio) is a stretch goal only if time remains.
+
+~~Superseded by decision #20 — replaced with real Telegram Login, not simulated phone/SMS.~~
 
 ## 15. Shipping — farmer configures once, 3 modes
 
@@ -121,3 +123,15 @@ A: Yes. Added to the new **Order confirmed** screen (also fills the previously-m
 - Appears **only** when the order is part of an active group-shipping pool (Mode 3) that hasn't hit its threshold yet — not shown on every order.
 - Shows current pool progress (e.g. "You just joined the group — 32/50kg") plus a **"Share on WhatsApp"** button (pre-filled message + link) and a secondary generic share icon for the native OS share sheet (other apps).
 - Not shown on Mode 1 or Mode 2 orders, or once a pool has already reached its threshold (at that point the messaging shifts to "free shipping secured," not a call to invite more people).
+
+## 20. Login method — real Telegram Login (replaces #14)
+
+**Q: Can the buyer also connect Telegram so a message arrives when their order is confirmed? Can login itself be done via Telegram?**
+
+A: Yes to both, and they're the same solution — **switching checkout login from simulated phone/SMS to the real Telegram Login Widget**:
+
+- Official, free Telegram feature — no SMS, no OTP, no external paid provider, no account the team needs to create beyond the bot itself.
+- Buyer taps "Log in with Telegram," confirms in the Telegram app, returns with name/username/photo and a Telegram chat ID.
+- **Login doubles as opening the buyer's chat with the Farmly bot** (via a `t.me/FarmlyBot?start=...` deep link) — Telegram bots can't message a user who has never started a chat with them, so this step is what unlocks the bot being able to send order/pool notifications afterward. Same mechanism, not two separate features.
+- **Shared blocker:** this needs the Telegram bot token, same one Walmy's `telegram-farmer-backend` branch is already waiting on (see decision #11) — worth syncing so both branches aren't blocked independently on the same missing token.
+- This is a real, functioning feature for the demo — not simulated like #14 was, and likely *less* build time since there's no fake OTP flow to construct.
