@@ -95,3 +95,19 @@ The farmer is asked about shipping **once, on their first Telegram listing** —
 - **Deadline passes without reaching threshold:** the buyer is notified and asked to confirm they accept paying the flat fee (mode 2's fee) to proceed with their order; if they don't respond in time, the order auto-cancels.
 - **Geolocation for the 30km check:** buyer's browser geolocation permission by default; if denied/unavailable, fall back to an address search (geocoded, e.g. via a free service like OpenStreetMap/Nominatim). Farmer sets an approximate location once via Telegram.
 - **Demo timing:** real deadlines can be hours/days — too slow to demo live. For today, we pre-seed one listing already in the "threshold reached" state to show that outcome without waiting on a live timer.
+
+## 17. App language
+
+**Correction:** the mockup was drifting into Spanish (matching the conversation) but the app itself must be **English**, matching the earlier default decision. `docs/mockup_flows.html` has been rewritten fully in English.
+
+## 18. Per-seller cart + free-shipping upsell (MercadoLibre-style)
+
+**Q: After adding a product, should the buyer immediately see a carousel of more products from the same seller — "add $X more to unlock free shipping" — to grow the cart?**
+
+A: Yes — this changes the buy flow from "confirm one item immediately" to a **real per-seller cart**:
+
+- Tapping a product's CTA now says **"Add to cart"**, not "Buy" — it doesn't confirm an order yet.
+- A cart screen appears showing what's in the cart so far, an upsell banner ("Add $8.50 more to unlock free shipping from Rio Verde Farm"), and a horizontal carousel of other items from that same farm with one-tap add buttons.
+- The buyer can keep adding or tap **Checkout**, which is where the phone/SMS login (see #14) and final confirmation happen.
+- The cart is scoped to **one seller at a time** — one checkout produces one `Order` with multiple `OrderLine`s, which already fits the shared `Order`/`OrderLine` schema in `docs/plan.md`. No backend schema change needed for this, just buyer-side flow.
+- This upsell threshold is the natural home for shipping **Mode 1** (free above a minimum) from decision #15 — the cart shows live progress toward that minimum.
