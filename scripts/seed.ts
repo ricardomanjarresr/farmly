@@ -5,9 +5,35 @@ const placeholder = (label: string) => `https://placehold.co/400x500?text=${enco
 
 async function main() {
   const farms = [
-    { name: "Rio Verde Farm", town: "Springfield", telegramChatId: "seed-rio-verde" },
-    { name: "Sunrise Acres", town: "Springfield", telegramChatId: "seed-sunrise-acres" },
-    { name: "Green Valley", town: "Millbrook", telegramChatId: "seed-green-valley" },
+    {
+      name: "Rio Verde Farm",
+      town: "Springfield",
+      telegramChatId: "seed-rio-verde",
+      lat: 42.1015,
+      lng: -72.5898,
+      shippingMode: "pooled",
+      poolThresholdQty: 50,
+      poolDeadlineHours: 48,
+    },
+    {
+      name: "Sunrise Acres",
+      town: "Springfield",
+      telegramChatId: "seed-sunrise-acres",
+      lat: 42.1091,
+      lng: -72.6015,
+      shippingMode: "free_above_min",
+      freeShippingMinAmount: 25,
+    },
+    {
+      name: "Green Valley",
+      town: "Millbrook",
+      telegramChatId: "seed-green-valley",
+      lat: 42.155,
+      lng: -72.512,
+      shippingMode: "flat_fee",
+      flatFeeAmount: 4.5,
+      flatFeeRadiusKm: 30,
+    },
   ];
 
   const [rioVerde, sunrise, greenValley] = await Promise.all(
@@ -22,6 +48,7 @@ async function main() {
 
   const now = new Date();
   const daysFromNow = (n: number) => new Date(now.getTime() + n * 24 * 60 * 60 * 1000);
+  const hoursFromNow = (n: number) => new Date(now.getTime() + n * 60 * 60 * 1000);
 
   const listings = [
     { farmId: rioVerde.id, item: "Heirloom tomatoes", category: "vegetable", price: 3.5, unit: "lb", qtyAvailable: 40, expiresAt: daysFromNow(5) },
@@ -31,9 +58,23 @@ async function main() {
     { farmId: greenValley.id, item: "Pasture-raised eggs", category: "eggs & dairy", price: 6.0, unit: "doz", qtyAvailable: 12, expiresAt: daysFromNow(10) },
   ];
 
+  const created = [];
   for (const l of listings) {
-    await prisma.listing.create({ data: { ...l, photoUrl: placeholder(l.item) } });
+    created.push(await prisma.listing.create({ data: { ...l, photoUrl: placeholder(l.item) } }));
   }
+
+  // Pre-seeded pool already at threshold (decision #16: real deadlines are too
+  // slow to demo live, so one listing ships already in the "reached" state).
+  const pooledListing = created[0]; // Heirloom tomatoes, Rio Verde Farm (pooled mode)
+  await prisma.shippingPool.create({
+    data: {
+      listingId: pooledListing.id,
+      targetQty: 50,
+      currentQty: 52,
+      deadline: hoursFromNow(20),
+      status: "reached",
+    },
+  });
 
   const referencePrices = [
     { item: "Heirloom tomatoes", source: "Whole Foods", price: 5.5 },
@@ -48,7 +89,9 @@ async function main() {
     await prisma.referencePrice.create({ data: rp });
   }
 
-  console.log(`Seeded ${farms.length} farms, ${listings.length} listings, ${referencePrices.length} reference prices.`);
+  console.log(
+    `Seeded ${farms.length} farms, ${listings.length} listings, 1 shipping pool (reached), ${referencePrices.length} reference prices.`,
+  );
 }
 
 main()

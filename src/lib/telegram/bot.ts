@@ -1,6 +1,7 @@
 import { Bot } from "grammy";
 import { prisma } from "@/lib/prisma";
 import { parseSellMessage } from "./parse";
+import { extractListingFromPhoto } from "./extract";
 
 function requireToken(): string {
   const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -16,6 +17,7 @@ export function createBot() {
       "Welcome to Farmly.\n\n" +
         "/setfarm Name, Town - set up your farm (do this first)\n" +
         "/sell item, price, unit, qty, expires - post a listing\n" +
+        "Or just send a photo - add a caption with price/qty/expiry for accuracy, or send it plain and I'll guess\n" +
         "/mislistings - see your active listings\n" +
         "/pedidos - see your orders",
     );
@@ -100,17 +102,97 @@ export function createBot() {
       await ctx.reply("Set up your farm first: /setfarm Name, Town");
       return;
     }
-    const orders = await prisma.order.findMany({
-      where: { listing: { farmId: farm.id }, status: "pending" },
-      include: { listing: true },
-      orderBy: { createdAt: "asc" },
+    const orderLines = await prisma.orderLine.findMany({
+      where: { listing: { farmId: farm.id }, order: { status: "pending" } },
+      include: { listing: true, order: true },
+      orderBy: { order: { createdAt: "asc" } },
     });
-    if (orders.length === 0) {
+    if (orderLines.length === 0) {
       await ctx.reply("No pending orders.");
       return;
     }
-    const lines = orders.map((o) => `${o.qty}${o.listing.unit} ${o.listing.item} - ${o.buyerName} (${o.buyerPhone})`);
-    await ctx.reply(`${orders.length} pending order(s)\n${lines.join("\n")}`);
+    const lines = orderLines.map((l) => `${l.qty}${l.listing.unit} ${l.listing.item} - ${l.order.buyerName} (${l.order.buyerPhone})`);
+    await ctx.reply(`${orderLines.length} pending order line(s)\n${lines.join("\n")}`);
+  });
+
+  bot.on("message:photo", async (ctx) => {
+    const chatId = ctx.chat.id.toString();
+    const farm = await prisma.farm.findUnique({ where: { telegramChatId: chatId } });
+    if (!farm) {
+      await ctx.reply("Set up your farm first: /setfarm Name, Town");
+      return;
+    }
+    await ctx.reply("Reading the photo...");
+    try {
+      const photo = ctx.message.photo[ctx.message.photo.length - 1];
+      const file = await ctx.api.getFile(photo.file_id);
+      const rawUrl = `https://api.telegram.org/file/bot${requireToken()}/${file.file_path}`;
+      const imgRes = await fetch(rawUrl);
+      const buffer = Buffer.from(await imgRes.arrayBuffer());
+      const imageBase64 = buffer.toString("base64");
+      const caption = ctx.message.caption;
+      // Store our own proxy path, not the raw Telegram URL - that URL embeds
+      // the bot token and this field is rendered as a public <img src>.
+      const photoUrl = `/api/telegram/photo/${photo.file_id}`;
+
+      const extracted = await extractListingFromPhoto(imageBase64, "image/jpeg", caption);
+
+      const draft = await prisma.listing.create({
+        data: {
+          farmId: farm.id,
+          item: extracted.item,
+          category: extracted.category,
+          price: extracted.price,
+          unit: extracted.unit,
+          qtyAvailable: extracted.qty,
+          expiresAt: extracted.expiresAt,
+          photoUrl,
+          status: "draft",
+        },
+      });
+
+      const guessNote = caption ? "" : "\n\n(No caption - price and quantity are guesses from the photo alone. Send another photo with a caption for accuracy, or cancel and use /sell.)";
+      await ctx.reply(
+        `I read: ${draft.item}, $${draft.price}/${draft.unit}, ${draft.qtyAvailable}${draft.unit}` +
+          (draft.expiresAt ? `, expires ${draft.expiresAt.toDateString()}` : "") +
+          guessNote +
+          `\n\nReply confirm to post it, or cancel to discard.`,
+      );
+    } catch (err) {
+      console.error("Photo extraction failed:", err);
+      await ctx.reply(
+        "Couldn't read that photo automatically. Post it as text instead:\n/sell item, price, unit, qty, expires (optional)",
+      );
+    }
+  });
+
+  bot.hears(/^confirm$/i, async (ctx) => {
+    const chatId = ctx.chat.id.toString();
+    const farm = await prisma.farm.findUnique({ where: { telegramChatId: chatId } });
+    if (!farm) return;
+    const draft = await prisma.listing.findFirst({
+      where: { farmId: farm.id, status: "draft" },
+      orderBy: { createdAt: "desc" },
+    });
+    if (!draft) {
+      await ctx.reply("Nothing to confirm - send a photo with /sell first.");
+      return;
+    }
+    await prisma.listing.update({ where: { id: draft.id }, data: { status: "active" } });
+    await ctx.reply(`Posted: ${draft.item}. Live on the feed now.`);
+  });
+
+  bot.hears(/^cancel$/i, async (ctx) => {
+    const chatId = ctx.chat.id.toString();
+    const farm = await prisma.farm.findUnique({ where: { telegramChatId: chatId } });
+    if (!farm) return;
+    const draft = await prisma.listing.findFirst({
+      where: { farmId: farm.id, status: "draft" },
+      orderBy: { createdAt: "desc" },
+    });
+    if (!draft) return;
+    await prisma.listing.delete({ where: { id: draft.id } });
+    await ctx.reply("Discarded.");
   });
 
   bot.hears(/^delete\s+(\d+)/i, async (ctx) => {

@@ -17,6 +17,17 @@ model Farm {
   name            String
   town            String
   telegramChatId  String    @unique
+  lat             Float?
+  lng             Float?
+
+  // Shipping config, set once per farm (decision #15): "free_above_min" | "flat_fee" | "pooled"
+  shippingMode          String   @default("flat_fee")
+  freeShippingMinAmount Float?   // mode: free_above_min
+  flatFeeAmount         Float?   // mode: flat_fee
+  flatFeeRadiusKm       Float?   // mode: flat_fee
+  poolThresholdQty      Float?   // mode: pooled - default target quantity for new pools
+  poolDeadlineHours     Int?     // mode: pooled - hours from first pool order to deadline
+
   createdAt       DateTime  @default(now())
   listings        Listing[]
 }
@@ -35,18 +46,44 @@ model Listing {
   likeCount     Int      @default(0)
   status        String   @default("active")
   createdAt     DateTime @default(now())
-  orders        Order[]
+  orderLines    OrderLine[]
+  shippingPool  ShippingPool?
 }
 
+model ShippingPool {
+  id         String   @id @default(cuid())
+  listing    Listing  @relation(fields: [listingId], references: [id])
+  listingId  String   @unique
+  targetQty  Float
+  currentQty Float    @default(0)
+  deadline   DateTime
+  status     String   @default("open") // "open" | "reached" | "expired"
+  createdAt  DateTime @default(now())
+}
+
+// One checkout = one Order (scoped to a single seller's cart) with many
+// OrderLines (one per product in that cart). Fits Ricardo's per-seller
+// cart + upsell flow without further schema changes (decision #18).
 model Order {
+  id                    String   @id @default(cuid())
+  buyerName             String
+  buyerPhone            String
+  buyerLat              Float?
+  buyerLng              Float?
+  buyerTelegramChatId   String?  // set once buyer uses Telegram Login (decision #20)
+  status                String   @default("pending")
+  createdAt             DateTime @default(now())
+  lines                 OrderLine[]
+}
+
+model OrderLine {
   id          String   @id @default(cuid())
+  order       Order    @relation(fields: [orderId], references: [id])
+  orderId     String
   listing     Listing  @relation(fields: [listingId], references: [id])
   listingId   String
-  buyerName   String
-  buyerPhone  String
   qty         Float
-  status      String   @default("pending")
-  createdAt   DateTime @default(now())
+  priceAgreed Float
 }
 
 model ReferencePrice {
