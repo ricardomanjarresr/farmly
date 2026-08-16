@@ -1,4 +1,5 @@
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Farmly Launch Film</title>
 <style>
   :root{
@@ -150,6 +151,30 @@
 
   .progress-rail{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(255,255,255,.08);}
   .progress-fill{height:100%;width:0%;background:var(--coral);transition:width 60ms linear;}
+
+  /* ---- mobile: stack phone + copy, shrink to fit a tall narrow screen ---- */
+  @media (max-width:760px){
+    html,body{overflow-y:auto;}
+    .film{overflow-y:auto;}
+    .scene{
+      position:absolute;inset:0;height:100%;
+      flex-direction:column;justify-content:center;
+      padding:24px 20px;overflow-y:auto;
+    }
+    .tg-wrap{flex-direction:column;gap:22px;width:100%;}
+    .side-copy{max-width:320px;text-align:center;margin:0 auto;}
+    .side-copy h2{font-size:clamp(20px,6vw,28px)!important;}
+    .side-copy p{font-size:13.5px!important;}
+    .phone{transform:scale(.72);margin:-70px 0;flex:none;}
+    .headline{font-size:clamp(28px,8vw,46px)!important;}
+    .steps-row{gap:18px;flex-wrap:wrap;}
+    .step-ic{width:52px;height:52px;font-size:22px;}
+    .step-label{font-size:12px;}
+    .kicker{font-size:11px;}
+  }
+  @media (max-width:400px){
+    .phone{transform:scale(.6);margin:-110px 0;}
+  }
 </style>
 
 <div class="film" id="film">
